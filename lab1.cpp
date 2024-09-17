@@ -28,7 +28,7 @@ void readSLAE(const string& file, vector<vector<T>>& A, vector<T>& b)
     fin.close();
 }
 
-void printSLAE(const vector<vector<T>>& A, const vector<T>& b)
+void printSLAE(const vector<vector<T>>& A, const vector<T>& b) // вывод СЛАУ
 {
     int n = A.size();
     for (int i = 0; i < n; i++)
@@ -43,6 +43,16 @@ void printSLAE(const vector<vector<T>>& A, const vector<T>& b)
     }
 }
 
+void printMatrix(const vector<vector<T>>& A) // вывод матрицы
+{
+    int n = A.size();
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = 0; j < n; j++)
+            cout << A[i][j] << " ";
+        cout << endl;
+    }
+}
 
 // Метод Гаусса с частичным выбором главного элемента (по столбцу)
 vector<T> GaussianMethod(vector<vector<T>>& A, vector<T>& b)
@@ -68,11 +78,11 @@ vector<T> GaussianMethod(vector<vector<T>>& A, vector<T>& b)
         if (maxElem < 1e-9) // проверка на нулевые (или малые по абсолютной величине) диагональные элементы
         {
             cout << "Не существует единственного решения СЛАУ" << endl;
-            return x;
+            system("pause");
         }
         
-        swap(A1[i], A1[maxRow]); // переставляем текущую строку со строкой с главным элементом
-        swap(b1[i], b1[maxRow]);
+        swap(A1[i], A1[maxRow]); // переставляем текущую строку матрицы со строкой с главным элементом
+        swap(b1[i], b1[maxRow]); // аналогично для правой части
 
         for (int j = i + 1; j < n; j++) // прямой ход
         {
@@ -119,45 +129,204 @@ T ResidualVectorNorm(const vector<vector<T>>& A, const vector<T>& b, const vecto
 vector<vector<T>> InvLU(const vector<vector<T>>& A) // нахождение обратной матрицы с помощью LU-разложения
 {
     int n = A.size();
-    vector<vector<T>> LU(n, vector<T>(n)); // L и U хранятся как одна матрица
+    vector<vector<T>> LU = A; // L и U хранятся как одна матрица
     vector<vector<T>> Ainv(n, vector<T>(n));
+
+    for (int i = 0; i < n; i++)
+    {
+        if (LU[i][i] == 0)
+        {
+            for (int j = i + 1; j < n; j++)
+            {
+                if (LU[j][i] != 0)
+                    swap(LU[i], LU[j]);
+            }
+        }
+    }
 
     for (int i = 0; i < n; i++)
     {
         for (int j = i; j < n; j++)
         {
-            LU[i][j] = A[i][j];
             for (int k = 0; k < i; k++)
                 LU[i][j] -= LU[i][k] * LU[k][j]; // элементы матрицы L (нижнетреугольная с единицами на главной диагонали)
         }
         for (int j = i + 1; j < n; j++)
         {
-            LU[j][i] = A[j][i];
             for (int k = 0; k < i; k++)
                 LU[j][i] -= LU[j][k] * LU[k][i]; // элементы матрицы U (верхнетреугольная)
             LU[j][i] /= LU[i][i];
         }
     }
 
-    // пока работает некорректно; разложение LU правильное
-    vector<T> y(n), x(n);
-    for (int i = 0; i < n; i++)
-    {
-        y[i] = 1;
-        for (int j = 0; j < i; j++)     // Решаем систему Ly = b (b = E, E - единичная матрица)
-            y[i] -= LU[i][j] * y[j];
+    // printMatrix(LU);
 
-        for (int j = n - 1; j >= 0; j--)     // Решаем систему Ux = y
+    for (int i = 0; i < n; i++)
+        Ainv[i][i] = 1;
+
+    for (int col = 0; col < n; col++)
+    {
+        vector<T> y(n), x(n);
+        for (int i = 0; i < n; i++)     // Решаем систему Ly = b (b - столбцы из единичной матрицы)
         {
-            Ainv[j][i] = y[j];
-            for (int k = j + 1; k < n; k++)
-                Ainv[j][i] -= LU[j][k] * Ainv[k][i];
-            Ainv[j][i] /= LU[j][j];
+            y[i] = Ainv[i][col];
+            for (int j = 0; j < i; j++)
+                y[i] -= LU[i][j] * y[j];
         }
+
+        for (int i = n - 1; i >= 0; i--)     // Решаем систему Ux = y
+        {
+            x[i] = y[i];
+            for (int j = i + 1; j < n; j++)
+                x[i] -= LU[i][j] * x[j];
+            x[i] /= LU[i][i];
+        }
+
+        for (int i = 0; i < n; i++)
+            Ainv[i][col] = x[i];
     }
 
     return Ainv;
 }
+
+T matrixNorm1(const vector<vector<T>>& A) // октаэдрическая норма
+{
+    int n = A.size();
+    vector<T> sum(n); // хранятся суммы модулей элементов всех столбцов
+    T maxSum = -1;
+
+    for (int j = 0; j < n; j++)
+    {
+        sum[j] = 0;
+        for (int i = 0; i < n; i++)
+            sum[j] += abs(A[i][j]);
+        if (sum[j] > maxSum)
+            maxSum = sum[j];
+    }
+
+    return maxSum;
+}
+
+T matrixNorm2(const vector<vector<T>>& A) // шаровая норма
+{
+    int n = A.size();
+    T sum = 0;
+
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = 0; j < n; j++)
+            sum += A[i][j] * A[i][j];
+    }
+
+    return sqrt(sum);
+}
+
+T matrixNormInf(const vector<vector<T>>& A) // кубическая норма
+{
+    int n = A.size();
+    vector<T> sum(n); // хранятся суммы модулей элементов всех строк
+    T maxSum = -1;
+
+    for (int i = 0; i < n; i++)
+    {
+        sum[i] = 0;
+        for (int j = 0; j < n; j++)
+            sum[i] += abs(A[i][j]);
+        if (sum[i] > maxSum)
+            maxSum = sum[i];
+    }
+
+    return maxSum;
+}
+
+T vectorNorm1(const vector<T>& b)
+{
+    int n = b.size();
+    T norm = 0;
+
+    for (int i = 0; i < n; i++)
+        norm += abs(b[i]);
+
+    return norm;
+}
+
+T vectorNorm2(const vector<T>& b)
+{
+    int n = b.size();
+    T result = 0;
+
+    for (int i = 0; i < n; i++)
+        result += b[i] * b[i];
+
+    return sqrt(result);
+}
+
+T vectorNormInf(const vector<T>& b)
+{
+    int n = b.size();
+    T norm = -1;
+
+    for (int i = 0; i < n; i++)
+    {
+        if (abs(b[i]) > norm)
+            norm = abs(b[i]);
+    }
+
+    return norm;
+}
+
+// Число обусловленности для различных матричных норм
+T cond1(const vector<vector<T>>& A) 
+{
+    vector<vector<T>> Ainv = InvLU(A);
+    return matrixNorm1(Ainv) * matrixNorm1(A);
+}
+
+T cond2(const vector<vector<T>>& A)
+{
+    vector<vector<T>> Ainv = InvLU(A);
+    return matrixNorm2(Ainv) * matrixNorm2(A);
+}
+
+T condInf(const vector<vector<T>>& A)
+{
+    vector<vector<T>> Ainv = InvLU(A);
+    return matrixNormInf(Ainv) * matrixNormInf(A);
+}
+
+T delta(const vector<T>& x, const vector<T>& x1) // x1 - решение возмущенной системы
+{
+    int n = x.size();
+    vector<T> dx(n);
+    T delta = 0;
+    for (int i = 0; i < n; i++)
+        dx[i] = abs(x1[i] - x[i]);
+    delta = vectorNorm1(dx) / vectorNorm1(x);
+    return delta;
+}
+
+T condEstimation(const vector<T>& x, const vector<T>& x1, const vector<T>& b, const vector<T>& b1)
+{
+    return delta(x, x1) / delta(b, b1);
+}
+
+void MatrixMult(const vector<vector<T>>& A, const vector<vector<T>>& B)
+{
+    int n = A.size();
+    vector<vector<T>> C(n, vector<T>(n));
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = 0; j < n; j++)
+        {
+            C[i][j] = 0;
+            for (int k = 0; k < n; k++)
+                C[i][j] += A[i][k] * B[k][j];
+        }
+    }
+    
+    printMatrix(C);
+}
+
 
 int main()
 {
@@ -179,9 +348,33 @@ int main()
     for (int i = 0; i < n; i++)
         cout << "x" << i + 1 << " = " << solution1[i] << endl;
 
-    cout << "Норма вектора невязки ||b - b1||: ";
+    cout << endl << "Норма вектора невязки ||b - b1||: ";
     T norm = ResidualVectorNorm(A, b, solution1);
     cout << norm << endl;
 
     vector<vector<T>> Ainv = InvLU(A);
+    cout << endl << "Обратная матрица для матрицы системы A:" << endl;
+    printMatrix(Ainv);
+
+    cout << endl << "Число обусловленности матрицы A при использовании" << endl;
+    cout << "октаэдрической нормы: " << cond1(A) << endl;
+    // cout << "шаровой нормы: " << cond2(A) << endl;
+    cout << "кубической нормы: " << condInf(A) << endl;
+
+    cout << endl << "Внесем возмущение 0.01 в систему:" << endl;
+    vector<T> b1(n);
+    for (int i = 0; i < n; i++)
+        b1[i] = b[i] + 0.01;
+    printSLAE(A, b1);
+
+    cout << endl << "Решение возмущенной системы методом Гаусса:" << endl;
+    vector<T> solution2 = GaussianMethod(A, b1);
+    for (int i = 0; i < n; i++)
+        cout << "x" << i + 1 << " = " << solution2[i] << endl;
+
+    cout << endl << "Результат умножения A^(-1) на A:" << endl;
+    MatrixMult(A, Ainv);
+
+    cout << endl << "Оценка числа обусловленности:" << endl;
+    cout << condEstimation(solution1, solution2, b, b1) << endl;
 }
