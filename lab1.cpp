@@ -54,6 +54,33 @@ void printMatrix(const vector<vector<T>>& A) // вывод матрицы
     }
 }
 
+vector<vector<T>> MatrixMult(const vector<vector<T>>& A, const vector<vector<T>>& B)
+{
+    int n = A.size();
+    vector<vector<T>> C(n, vector<T>(n));
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = 0; j < n; j++)
+        {
+            C[i][j] = 0;
+            for (int k = 0; k < n; k++)
+                C[i][j] += A[i][k] * B[k][j];
+        }
+    }
+    return C;
+}
+
+vector<vector<T>> Transpose(const vector<vector<T>>& A) {
+    vector<vector<T>> A1 = A;
+    int n = A.size();
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            A1[i][j] = A[j][i];
+        }
+    }
+    return A1;
+}
+
 T vectorNorm1(const vector<T>& b)
 {
     int n = b.size();
@@ -128,6 +155,60 @@ vector<T> GaussianMethod(vector<vector<T>>& A, vector<T>& b)
         x[i] /= A1[i][i];
     }
 
+    return x;
+}
+
+vector<T> QRMethod(vector<vector<T>>& A, vector<T>& b)
+{
+    int n = A.size();
+    vector<T> x(n);
+    vector<vector<T>> A1 = A;
+    vector<vector<T>> P(n, vector<T>(n));
+    vector<vector<T>> R(n, vector<T>(n));
+    // генерация единичной матрицы
+    for (int i = 0; i < n; i++)
+        P[i][i] = 1;
+
+    for (int k = 0; k < n; k++) {
+        for (int j = 1; j < n; j++) {
+            T ckj = A1[k][k] / sqrt(A1[k][k] * A1[k][k] + A1[j][k] * A1[j][k]);
+            T sjk = A1[j][k] / sqrt(A1[k][k] * A1[k][k] + A1[j][k] * A1[j][k]);
+
+            for (int i = 0; i < n; i++) {
+                A1[k][i] = ckj * A[k][i] + sjk * A[j][i];
+                A1[j][i] = -sjk * A[k][i] + ckj * A[j][i];
+            }
+            P = MatrixMult(A1, P);
+            if (k == n && j == n) {
+                for (int i = 0; i < n; i++) {
+                    for (int l = 0; l < n; l++) {
+                        R[i][l] = A1[i][l];
+                    }
+                }
+            }
+        }
+    }
+    vector<vector<T>> Q = Transpose(P);
+    cout << "Матрица Q:" << endl;
+    printMatrix(Q);
+    cout << "Матрица R:" << endl;
+    printMatrix(R);
+    cout << "Матрица A(проверка):" << endl;
+    printMatrix(MatrixMult(Q, R));
+
+    vector<T> b1(n, 0);
+    for (int i = 0; i < n; i++) {
+        T temp = 0;
+        for (int j = 0; j < n; j++) {temp += Q[j][i] * b[j];}
+        b1[i] = temp;
+    }
+
+    vector<T> x(n, 0);
+    for (int i = n - 1; i >= 0; i--) {
+        x[i] = b1[i];
+        for (int j = i + 1; j < n; j++) {x[i] -= R[i][j] * x[j];}
+        x[i] /= R[i][i];
+    }
     return x;
 }
 
@@ -215,6 +296,7 @@ vector<vector<T>> InvLU(const vector<vector<T>>& A) // нахождение об
     return Ainv;
 }
 
+
 T matrixNorm1(const vector<vector<T>>& A) // октаэдрическая норма
 {
     int n = A.size();
@@ -280,22 +362,6 @@ T condEstimation(const vector<T>& x, const vector<T>& x1, const vector<T>& b, co
     return delta(x, x1) / delta(b, b1);
 }
 
-void MatrixMult(const vector<vector<T>>& A, const vector<vector<T>>& B)
-{
-    int n = A.size();
-    vector<vector<T>> C(n, vector<T>(n));
-    for (int i = 0; i < n; i++)
-    {
-        for (int j = 0; j < n; j++)
-        {
-            C[i][j] = 0;
-            for (int k = 0; k < n; k++)
-                C[i][j] += A[i][k] * B[k][j];
-        }
-    }
-    
-    printMatrix(C);
-}
 
 
 int main()
@@ -340,7 +406,9 @@ int main()
         cout << "x" << i + 1 << " = " << solution2[i] << endl;
 
     cout << endl << "Результат умножения A^(-1) на A:" << endl;
-    MatrixMult(A, Ainv);
+    vector<vector<T>> M = MatrixMult(A, Ainv);
+    printMatrix(M);
+    
 
     cout << endl << "Оценка числа обусловленности:" << endl;
     cout << condEstimation(solution1, solution2, b, b1) << endl;
