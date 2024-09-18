@@ -132,7 +132,7 @@ vector<T> GaussianMethod(vector<vector<T>>& A, vector<T>& b)
             cout << "Не существует единственного решения СЛАУ" << endl;
             system("pause");
         }
-        
+
         swap(A1[i], A1[maxRow]); // переставляем текущую строку матрицы со строкой с главным элементом
         swap(b1[i], b1[maxRow]); // аналогично для правой части
 
@@ -169,44 +169,71 @@ vector<T> QRMethod(vector<vector<T>>& A, vector<T>& b)
     for (int i = 0; i < n; i++)
         P[i][i] = 1;
 
-    for (int k = 0; k < n; k++) {
-        for (int j = 1; j < n; j++) {
-            T ckj = A1[k][k] / sqrt(A1[k][k] * A1[k][k] + A1[j][k] * A1[j][k]);
-            T sjk = A1[j][k] / sqrt(A1[k][k] * A1[k][k] + A1[j][k] * A1[j][k]);
+    for (int i = 0; i < n; i++)
+    {
+        int mx = i;
+        for (int j = i; j < n; j++)
+        {
+            if (abs(A1[j][i]) > abs(A1[mx][i]))
+                mx = j;
+        }
+        if (mx != i)
+        {
+            swap(A1[mx], A1[i]);
+            swap(P[mx], P[i]);
+        }
+        if (abs(A1[i][i]) < 1e-9)
+            system("pause");
 
-            for (int i = 0; i < n; i++) {
-                A1[k][i] = ckj * A[k][i] + sjk * A[j][i];
-                A1[j][i] = -sjk * A[k][i] + ckj * A[j][i];
+        for (int j = i + 1; j < n; j++)
+        {
+            T ckj = A1[i][i] / sqrt(A1[i][i] * A1[i][i] + A1[j][i] * A1[j][i]);
+            T sjk = A1[j][i] / sqrt(A1[i][i] * A1[i][i] + A1[j][i] * A1[j][i]);
+
+            for (int k = 0; k < n; k++)
+            {
+                T temp = ckj * A1[i][k] + sjk * A1[j][k];
+                A1[j][k] = -sjk * A1[i][k] + ckj * A1[j][k];
+                A1[i][k] = temp;
             }
-            P = MatrixMult(A1, P);
-            if (k == n && j == n) {
-                for (int i = 0; i < n; i++) {
-                    for (int l = 0; l < n; l++) {
-                        R[i][l] = A1[i][l];
-                    }
-                }
+
+            for (int k = 0; k < n; k++)
+            {
+                T temp = ckj * P[i][k] + sjk * P[j][k];
+                P[j][k] = -sjk * P[i][k] + ckj * P[j][k];
+                P[i][k] = temp;
             }
         }
     }
+    
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = 0; j < n; j++)
+        {
+            if (j >= i)
+                R[i][j] = A1[i][j];
+        }
+    }
+
     vector<vector<T>> Q = Transpose(P);
-    cout << "Матрица Q:" << endl;
+    cout << endl << "Матрица Q:" << endl;
     printMatrix(Q);
-    cout << "Матрица R:" << endl;
+    cout << endl << "Матрица R:" << endl;
     printMatrix(R);
-    cout << "Матрица A(проверка):" << endl;
+    cout << endl << "Матрица A (проверка):" << endl;
     printMatrix(MatrixMult(Q, R));
+    cout << endl;
 
     vector<T> b1(n, 0);
     for (int i = 0; i < n; i++) {
         T temp = 0;
-        for (int j = 0; j < n; j++) {temp += Q[j][i] * b[j];}
+        for (int j = 0; j < n; j++) { temp += Q[j][i] * b[j]; }
         b1[i] = temp;
     }
 
-    vector<T> x(n, 0);
     for (int i = n - 1; i >= 0; i--) {
         x[i] = b1[i];
-        for (int j = i + 1; j < n; j++) {x[i] -= R[i][j] * x[j];}
+        for (int j = i + 1; j < n; j++) { x[i] -= R[i][j] * x[j]; }
         x[i] /= R[i][i];
     }
     return x;
@@ -334,7 +361,7 @@ T matrixNormInf(const vector<vector<T>>& A) // кубическая норма
 }
 
 // Число обусловленности для различных матричных норм
-T cond1(const vector<vector<T>>& A) 
+T cond1(const vector<vector<T>>& A)
 {
     vector<vector<T>> Ainv = InvLU(A);
     return matrixNorm1(Ainv) * matrixNorm1(A);
@@ -346,20 +373,34 @@ T condInf(const vector<vector<T>>& A)
     return matrixNormInf(Ainv) * matrixNormInf(A);
 }
 
-T delta(const vector<T>& x, const vector<T>& x1) // x1 - решение возмущенной системы
+void condEstimation(vector<vector<T>>& A, vector<T>& b, const vector<T>& disturb)
 {
-    int n = x.size();
+    int n = b.size();
+    vector<T> b1(n);
+    for (int i = 0; i < n; i++)
+        b1[i] = b[i] + disturb[i];
+    
+    vector<T> x(n), x1(n);
+    x = GaussianMethod(A, b);
+    x1 = GaussianMethod(A, b1);
+    for (int i = 0; i < n; i++)
+        cout << "x" << i + 1 << " = " << x1[i] << endl;
+
+    T b_delta1 = vectorNorm1(disturb) / vectorNorm1(b);
+    T b_deltaInf = vectorNormInf(disturb) / vectorNormInf(b);
+
     vector<T> dx(n);
-    T delta = 0;
     for (int i = 0; i < n; i++)
         dx[i] = abs(x1[i] - x[i]);
-    delta = vectorNorm1(dx) / vectorNorm1(x);
-    return delta;
-}
 
-T condEstimation(const vector<T>& x, const vector<T>& x1, const vector<T>& b, const vector<T>& b1)
-{
-    return delta(x, x1) / delta(b, b1);
+    T x_delta1 = vectorNorm1(dx) / vectorNorm1(x);
+    T x_deltaInf = vectorNormInf(dx) / vectorNormInf(x);
+
+    T condEst1 = x_delta1 / b_delta1;
+    T condEstInf = x_deltaInf / b_deltaInf;
+
+    cout << endl << condEst1 << endl;
+    cout << condEstInf << endl;
 }
 
 
@@ -384,6 +425,11 @@ int main()
     for (int i = 0; i < n; i++)
         cout << "x" << i + 1 << " = " << solution1[i] << endl;
 
+    cout << endl << "Решение СЛАУ методом QR-разложения:" << endl;
+    vector<T> solution2 = QRMethod(A, b);
+    for (int i = 0; i < n; i++)
+        cout << "x" << i + 1 << " = " << solution2[i] << endl;
+
     ResidualVectorNorm(A, b, solution1);
 
     vector<vector<T>> Ainv = InvLU(A);
@@ -394,6 +440,11 @@ int main()
     cout << "октаэдрической нормы: " << cond1(A) << endl;
     cout << "кубической нормы: " << condInf(A) << endl;
 
+    vector<T> disturb = { 0.01, 0.01, 0.01, 0.01 }; // возмущение
+
+    condEstimation(A, b, disturb);
+
+    /*
     cout << endl << "Внесем возмущение 0.01 в систему:" << endl;
     vector<T> b1(n);
     for (int i = 0; i < n; i++)
@@ -401,15 +452,15 @@ int main()
     printSLAE(A, b1);
 
     cout << endl << "Решение возмущенной системы методом Гаусса:" << endl;
-    vector<T> solution2 = GaussianMethod(A, b1);
+    vector<T> solution3 = GaussianMethod(A, b1);
     for (int i = 0; i < n; i++)
-        cout << "x" << i + 1 << " = " << solution2[i] << endl;
+        cout << "x" << i + 1 << " = " << solution3[i] << endl;
 
     cout << endl << "Результат умножения A^(-1) на A:" << endl;
     vector<vector<T>> M = MatrixMult(A, Ainv);
     printMatrix(M);
-    
+    */
 
-    cout << endl << "Оценка числа обусловленности:" << endl;
-    cout << condEstimation(solution1, solution2, b, b1) << endl;
+    // cout << endl << "Оценка числа обусловленности:" << endl;
+    // cout << condEstimation(solution1, solution3, b, b1) << endl;
 }
