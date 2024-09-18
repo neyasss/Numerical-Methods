@@ -54,6 +54,31 @@ void printMatrix(const vector<vector<T>>& A) // вывод матрицы
     }
 }
 
+T vectorNorm1(const vector<T>& b)
+{
+    int n = b.size();
+    T norm = 0;
+
+    for (int i = 0; i < n; i++)
+        norm += abs(b[i]);
+
+    return norm;
+}
+
+T vectorNormInf(const vector<T>& b)
+{
+    int n = b.size();
+    T norm = -1;
+
+    for (int i = 0; i < n; i++)
+    {
+        if (abs(b[i]) > norm)
+            norm = abs(b[i]);
+    }
+
+    return norm;
+}
+
 // Метод Гаусса с частичным выбором главного элемента (по столбцу)
 vector<T> GaussianMethod(vector<vector<T>>& A, vector<T>& b)
 {
@@ -106,7 +131,7 @@ vector<T> GaussianMethod(vector<vector<T>>& A, vector<T>& b)
     return x;
 }
 
-T ResidualVectorNorm(const vector<vector<T>>& A, const vector<T>& b, const vector<T>& x) // норма вектора невязки
+void ResidualVectorNorm(const vector<vector<T>>& A, const vector<T>& b, const vector<T>& x) // норма вектора невязки
 {
     int n = A.size();
     vector<T> residualVec(n);
@@ -120,10 +145,11 @@ T ResidualVectorNorm(const vector<vector<T>>& A, const vector<T>& b, const vecto
         }
     }
 
-    for (T elem : residualVec)
-        result += elem * elem;
-
-    return sqrt(result);
+    T norm1 = vectorNorm1(residualVec);
+    T norm2 = vectorNormInf(residualVec);
+    cout << endl << "Норма вектора невязки ||b - b1||" << endl;
+    cout << "для октаэдрической нормы: " << norm1 << endl;
+    cout << "для кубической нормы: " << norm2 << endl;
 }
 
 vector<vector<T>> InvLU(const vector<vector<T>>& A) // нахождение обратной матрицы с помощью LU-разложения
@@ -207,20 +233,6 @@ T matrixNorm1(const vector<vector<T>>& A) // октаэдрическая нор
     return maxSum;
 }
 
-T matrixNorm2(const vector<vector<T>>& A) // шаровая норма
-{
-    int n = A.size();
-    T sum = 0;
-
-    for (int i = 0; i < n; i++)
-    {
-        for (int j = 0; j < n; j++)
-            sum += A[i][j] * A[i][j];
-    }
-
-    return sqrt(sum);
-}
-
 T matrixNormInf(const vector<vector<T>>& A) // кубическая норма
 {
     int n = A.size();
@@ -239,53 +251,11 @@ T matrixNormInf(const vector<vector<T>>& A) // кубическая норма
     return maxSum;
 }
 
-T vectorNorm1(const vector<T>& b)
-{
-    int n = b.size();
-    T norm = 0;
-
-    for (int i = 0; i < n; i++)
-        norm += abs(b[i]);
-
-    return norm;
-}
-
-T vectorNorm2(const vector<T>& b)
-{
-    int n = b.size();
-    T result = 0;
-
-    for (int i = 0; i < n; i++)
-        result += b[i] * b[i];
-
-    return sqrt(result);
-}
-
-T vectorNormInf(const vector<T>& b)
-{
-    int n = b.size();
-    T norm = -1;
-
-    for (int i = 0; i < n; i++)
-    {
-        if (abs(b[i]) > norm)
-            norm = abs(b[i]);
-    }
-
-    return norm;
-}
-
 // Число обусловленности для различных матричных норм
 T cond1(const vector<vector<T>>& A) 
 {
     vector<vector<T>> Ainv = InvLU(A);
     return matrixNorm1(Ainv) * matrixNorm1(A);
-}
-
-T cond2(const vector<vector<T>>& A)
-{
-    vector<vector<T>> Ainv = InvLU(A);
-    return matrixNorm2(Ainv) * matrixNorm2(A);
 }
 
 T condInf(const vector<vector<T>>& A)
@@ -348,9 +318,7 @@ int main()
     for (int i = 0; i < n; i++)
         cout << "x" << i + 1 << " = " << solution1[i] << endl;
 
-    cout << endl << "Норма вектора невязки ||b - b1||: ";
-    T norm = ResidualVectorNorm(A, b, solution1);
-    cout << norm << endl;
+    ResidualVectorNorm(A, b, solution1);
 
     vector<vector<T>> Ainv = InvLU(A);
     cout << endl << "Обратная матрица для матрицы системы A:" << endl;
@@ -358,7 +326,6 @@ int main()
 
     cout << endl << "Число обусловленности матрицы A при использовании" << endl;
     cout << "октаэдрической нормы: " << cond1(A) << endl;
-    // cout << "шаровой нормы: " << cond2(A) << endl;
     cout << "кубической нормы: " << condInf(A) << endl;
 
     cout << endl << "Внесем возмущение 0.01 в систему:" << endl;
