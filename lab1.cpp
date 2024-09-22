@@ -383,6 +383,8 @@ void condEstimation(vector<vector<T>>& A, vector<T>& b, const vector<T>& disturb
     vector<T> x(n), x1(n);
     x = GaussianMethod(A, b);
     x1 = GaussianMethod(A, b1);
+
+    cout << "Решение возмущенной системы:" << endl;
     for (int i = 0; i < n; i++)
         cout << "x" << i + 1 << " = " << x1[i] << endl;
 
@@ -403,7 +405,61 @@ void condEstimation(vector<vector<T>>& A, vector<T>& b, const vector<T>& disturb
     cout << condEstInf << endl;
 }
 
+void condEstimationLower(vector<vector<T>>& A, vector<T>& b, int disturbCount = 5)
+{
+    int n = b.size();
+    T lower1 = 1e+9;
+    T lowerInf = 1e+9;
 
+    vector<T> x(n);
+    x = GaussianMethod(A, b);
+
+    vector<T> disturb = { -0.01, 0.01 };
+    for (int i = 0; i < disturbCount; i++)
+    {
+        vector<T> b1(n);
+        for (int j = 0; j < n; j++)
+            b1[j] = b[j] + disturb[rand() % 2];
+
+        // for (int j = 0; j < n; j++)
+        //    cout << "b" << j + 1 << " = " << b1[j] << endl;
+
+        vector<T> x1(n);
+        x1 = GaussianMethod(A, b1);
+
+        // cout << "Решение возмущенной системы:" << endl;
+        // for (int k = 0; k < n; k++)
+        //    cout << "x" << k + 1 << " = " << x1[k] << endl;
+
+        vector<T> db(n);
+        for (int j = 0; j < n; j++)
+            db[j] = abs(b1[j] - b[j]);
+
+        vector<T> dx(n);
+        for (int j = 0; j < n; j++)
+            dx[j] = abs(x1[j] - x[j]);
+
+        T b_delta1 = vectorNorm1(db) / vectorNorm1(b);
+        T b_deltaInf = vectorNormInf(db) / vectorNormInf(b);
+
+        T x_delta1 = vectorNorm1(dx) / vectorNorm1(x);
+        T x_deltaInf = vectorNormInf(dx) / vectorNormInf(x);
+
+        T condEst1 = x_delta1 / b_delta1;
+        T condEstInf = x_deltaInf / b_deltaInf;
+
+        // cout << endl << condEst1 << endl;
+        // cout << condEstInf << endl;
+
+        if (condEst1 > 0)
+            lower1 = min(lower1, condEst1);
+        if (condEstInf > 0)
+            lowerInf = min(lowerInf, condEstInf);
+    }
+
+    cout << endl << "cond1 A >= " << lower1 << endl;
+    cout << "condInf A >= " << lowerInf << endl;
+}
 
 int main()
 {
@@ -425,12 +481,14 @@ int main()
     for (int i = 0; i < n; i++)
         cout << "x" << i + 1 << " = " << solution1[i] << endl;
 
+    ResidualVectorNorm(A, b, solution1);
+
     cout << endl << "Решение СЛАУ методом QR-разложения:" << endl;
     vector<T> solution2 = QRMethod(A, b);
     for (int i = 0; i < n; i++)
         cout << "x" << i + 1 << " = " << solution2[i] << endl;
 
-    ResidualVectorNorm(A, b, solution1);
+    ResidualVectorNorm(A, b, solution2);
 
     vector<vector<T>> Ainv = InvLU(A);
     cout << endl << "Обратная матрица для матрицы системы A:" << endl;
@@ -440,27 +498,14 @@ int main()
     cout << "октаэдрической нормы: " << cond1(A) << endl;
     cout << "кубической нормы: " << condInf(A) << endl;
 
-    vector<T> disturb = { 0.01, 0.01, 0.01, 0.01 }; // возмущение
+    // vector<T> disturb = { 0.01, 0.01, 0.01, 0.01 }; // возмущение
 
-    condEstimation(A, b, disturb);
+    // condEstimation(A, b, disturb);
 
-    /*
-    cout << endl << "Внесем возмущение 0.01 в систему:" << endl;
-    vector<T> b1(n);
-    for (int i = 0; i < n; i++)
-        b1[i] = b[i] + 0.01;
-    printSLAE(A, b1);
-
-    cout << endl << "Решение возмущенной системы методом Гаусса:" << endl;
-    vector<T> solution3 = GaussianMethod(A, b1);
-    for (int i = 0; i < n; i++)
-        cout << "x" << i + 1 << " = " << solution3[i] << endl;
+    cout << endl << "Оценка числа обусловленности:";
+    condEstimationLower(A, b);
 
     cout << endl << "Результат умножения A^(-1) на A:" << endl;
     vector<vector<T>> M = MatrixMult(A, Ainv);
     printMatrix(M);
-    */
-
-    // cout << endl << "Оценка числа обусловленности:" << endl;
-    // cout << condEstimation(solution1, solution3, b, b1) << endl;
 }
