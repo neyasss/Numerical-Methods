@@ -27,7 +27,7 @@ void readSLAE(const string& file, vector<vector<T>>& A, vector<T>& b)
     fin.close();
 }
 
-void printSLAE(const vector<vector<T>>& A, const vector<T>& b) // вывод СЛАУ
+void printSLAE(const vector<vector<T>>& A, const vector<T>& b) // РІС‹РІРѕРґ РЎР›РђРЈ
 {
     int n = A.size();
     for (int i = 0; i < n; i++)
@@ -42,7 +42,7 @@ void printSLAE(const vector<vector<T>>& A, const vector<T>& b) // вывод СЛАУ
     }
 }
 
-void printMatrix(const vector<vector<T>>& A) // вывод матрицы
+void printMatrix(const vector<vector<T>>& A) // РІС‹РІРѕРґ РјР°С‚СЂРёС†С‹
 {
     int n = A.size();
     for (int i = 0; i < n; i++)
@@ -105,7 +105,7 @@ T vectorNormInf(const vector<T>& b)
     return norm;
 }
 
-// Метод Гаусса с частичным выбором главного элемента (по столбцу)
+// РњРµС‚РѕРґ Р“Р°СѓСЃСЃР° СЃ С‡Р°СЃС‚РёС‡РЅС‹Рј РІС‹Р±РѕСЂРѕРј РіР»Р°РІРЅРѕРіРѕ СЌР»РµРјРµРЅС‚Р° (РїРѕ СЃС‚РѕР»Р±С†Сѓ)
 vector<T> GaussianMethod(vector<vector<T>>& A, vector<T>& b)
 {
     int n = A.size();
@@ -113,7 +113,7 @@ vector<T> GaussianMethod(vector<vector<T>>& A, vector<T>& b)
     vector<vector<T>> A1 = A;
     vector<T> b1 = b;
 
-    for (int i = 0; i < n; i++) // ищем главный элемент
+    for (int i = 0; i < n; i++) // РёС‰РµРј РіР»Р°РІРЅС‹Р№ СЌР»РµРјРµРЅС‚
     {
         T maxElem = abs(A1[i][i]);
         int maxRow = i;
@@ -126,16 +126,16 @@ vector<T> GaussianMethod(vector<vector<T>>& A, vector<T>& b)
             }
         }
 
-        if (maxElem < 1e-9) // проверка на нулевые (или малые по абсолютной величине) диагональные элементы
+        if (maxElem < 1e-9) // РїСЂРѕРІРµСЂРєР° РЅР° РЅСѓР»РµРІС‹Рµ (РёР»Рё РјР°Р»С‹Рµ РїРѕ Р°Р±СЃРѕР»СЋС‚РЅРѕР№ РІРµР»РёС‡РёРЅРµ) РґРёР°РіРѕРЅР°Р»СЊРЅС‹Рµ СЌР»РµРјРµРЅС‚С‹
         {
-            cout << "Не существует единственного решения СЛАУ" << endl;
+            cout << "РќРµ СЃСѓС‰РµСЃС‚РІСѓРµС‚ РµРґРёРЅСЃС‚РІРµРЅРЅРѕРіРѕ СЂРµС€РµРЅРёСЏ РЎР›РђРЈ" << endl;
             system("pause");
         }
 
-        swap(A1[i], A1[maxRow]); // переставляем текущую строку матрицы со строкой с главным элементом
-        swap(b1[i], b1[maxRow]); // аналогично для правой части
+        swap(A1[i], A1[maxRow]); // РїРµСЂРµСЃС‚Р°РІР»СЏРµРј С‚РµРєСѓС‰СѓСЋ СЃС‚СЂРѕРєСѓ РјР°С‚СЂРёС†С‹ СЃРѕ СЃС‚СЂРѕРєРѕР№ СЃ РіР»Р°РІРЅС‹Рј СЌР»РµРјРµРЅС‚РѕРј
+        swap(b1[i], b1[maxRow]); // Р°РЅР°Р»РѕРіРёС‡РЅРѕ РґР»СЏ РїСЂР°РІРѕР№ С‡Р°СЃС‚Рё
 
-        for (int j = i + 1; j < n; j++) // прямой ход
+        for (int j = i + 1; j < n; j++) // РїСЂСЏРјРѕР№ С…РѕРґ
         {
             T c_ji = A1[j][i] / A1[i][i];
             for (int k = i; k < n; k++)
@@ -144,9 +144,9 @@ vector<T> GaussianMethod(vector<vector<T>>& A, vector<T>& b)
         }
     }
 
-    // printSLAE(A1, b1); // полученный верхнетреугольный вид
+    // printSLAE(A1, b1); // РїРѕР»СѓС‡РµРЅРЅС‹Р№ РІРµСЂС…РЅРµС‚СЂРµСѓРіРѕР»СЊРЅС‹Р№ РІРёРґ
 
-    for (int i = n - 1; i >= 0; i--) // обратный ход
+    for (int i = n - 1; i >= 0; i--) // РѕР±СЂР°С‚РЅС‹Р№ С…РѕРґ
     {
         x[i] = b1[i];
         for (int j = i + 1; j < n; j++)
@@ -164,7 +164,7 @@ vector<T> QRMethod(vector<vector<T>>& A, vector<T>& b)
     vector<vector<T>> A1 = A;
     vector<vector<T>> P(n, vector<T>(n));
     vector<vector<T>> R(n, vector<T>(n));
-    // генерация единичной матрицы
+    // РіРµРЅРµСЂР°С†РёСЏ РµРґРёРЅРёС‡РЅРѕР№ РјР°С‚СЂРёС†С‹
     for (int i = 0; i < n; i++)
         P[i][i] = 1;
 
@@ -215,11 +215,11 @@ vector<T> QRMethod(vector<vector<T>>& A, vector<T>& b)
     }
 
     vector<vector<T>> Q = Transpose(P);
-    cout << endl << "Матрица Q:" << endl;
+    cout << endl << "РњР°С‚СЂРёС†Р° Q:" << endl;
     printMatrix(Q);
-    cout << endl << "Матрица R:" << endl;
+    cout << endl << "РњР°С‚СЂРёС†Р° R:" << endl;
     printMatrix(R);
-    cout << endl << "Матрица A (проверка):" << endl;
+    cout << endl << "РњР°С‚СЂРёС†Р° A (РїСЂРѕРІРµСЂРєР°):" << endl;
     printMatrix(MatrixMult(Q, R));
     cout << endl;
 
@@ -238,7 +238,7 @@ vector<T> QRMethod(vector<vector<T>>& A, vector<T>& b)
     return x;
 }
 
-void ResidualVectorNorm(const vector<vector<T>>& A, const vector<T>& b, const vector<T>& x) // норма вектора невязки
+void ResidualVectorNorm(const vector<vector<T>>& A, const vector<T>& b, const vector<T>& x) // РЅРѕСЂРјР° РІРµРєС‚РѕСЂР° РЅРµРІСЏР·РєРё
 {
     int n = A.size();
     vector<T> residualVec(n);
@@ -248,21 +248,21 @@ void ResidualVectorNorm(const vector<vector<T>>& A, const vector<T>& b, const ve
         residualVec[i] = b[i];
         for (int j = 0; j < n; j++)
         {
-            residualVec[i] -= A[i][j] * x[j]; // вычисляем компоненты вектора невязки
+            residualVec[i] -= A[i][j] * x[j]; // РІС‹С‡РёСЃР»СЏРµРј РєРѕРјРїРѕРЅРµРЅС‚С‹ РІРµРєС‚РѕСЂР° РЅРµРІСЏР·РєРё
         }
     }
 
     T norm1 = vectorNorm1(residualVec);
     T norm2 = vectorNormInf(residualVec);
-    cout << endl << "Норма вектора невязки ||b - b1||" << endl;
-    cout << "для октаэдрической нормы: " << norm1 << endl;
-    cout << "для кубической нормы: " << norm2 << endl;
+    cout << endl << "РќРѕСЂРјР° РІРµРєС‚РѕСЂР° РЅРµРІСЏР·РєРё ||b - b1||" << endl;
+    cout << "РґР»СЏ РѕРєС‚Р°СЌРґСЂРёС‡РµСЃРєРѕР№ РЅРѕСЂРјС‹: " << norm1 << endl;
+    cout << "РґР»СЏ РєСѓР±РёС‡РµСЃРєРѕР№ РЅРѕСЂРјС‹: " << norm2 << endl;
 }
 
-vector<vector<T>> InvLU(const vector<vector<T>>& A) // нахождение обратной матрицы с помощью LU-разложения
+vector<vector<T>> InvLU(const vector<vector<T>>& A) // РЅР°С…РѕР¶РґРµРЅРёРµ РѕР±СЂР°С‚РЅРѕР№ РјР°С‚СЂРёС†С‹ СЃ РїРѕРјРѕС‰СЊСЋ LU-СЂР°Р·Р»РѕР¶РµРЅРёСЏ
 {
     int n = A.size();
-    vector<vector<T>> LU = A; // L и U хранятся как одна матрица
+    vector<vector<T>> LU = A; // L Рё U С…СЂР°РЅСЏС‚СЃСЏ РєР°Рє РѕРґРЅР° РјР°С‚СЂРёС†Р°
     vector<vector<T>> Ainv(n, vector<T>(n));
 
     for (int i = 0; i < n; i++)
@@ -282,12 +282,12 @@ vector<vector<T>> InvLU(const vector<vector<T>>& A) // нахождение обратной матри
         for (int j = i; j < n; j++)
         {
             for (int k = 0; k < i; k++)
-                LU[i][j] -= LU[i][k] * LU[k][j]; // элементы матрицы L (нижнетреугольная с единицами на главной диагонали)
+                LU[i][j] -= LU[i][k] * LU[k][j]; // СЌР»РµРјРµРЅС‚С‹ РјР°С‚СЂРёС†С‹ L (РЅРёР¶РЅРµС‚СЂРµСѓРіРѕР»СЊРЅР°СЏ СЃ РµРґРёРЅРёС†Р°РјРё РЅР° РіР»Р°РІРЅРѕР№ РґРёР°РіРѕРЅР°Р»Рё)
         }
         for (int j = i + 1; j < n; j++)
         {
             for (int k = 0; k < i; k++)
-                LU[j][i] -= LU[j][k] * LU[k][i]; // элементы матрицы U (верхнетреугольная)
+                LU[j][i] -= LU[j][k] * LU[k][i]; // СЌР»РµРјРµРЅС‚С‹ РјР°С‚СЂРёС†С‹ U (РІРµСЂС…РЅРµС‚СЂРµСѓРіРѕР»СЊРЅР°СЏ)
             LU[j][i] /= LU[i][i];
         }
     }
@@ -300,14 +300,14 @@ vector<vector<T>> InvLU(const vector<vector<T>>& A) // нахождение обратной матри
     for (int col = 0; col < n; col++)
     {
         vector<T> y(n), x(n);
-        for (int i = 0; i < n; i++)     // Решаем систему Ly = b (b - столбцы из единичной матрицы)
+        for (int i = 0; i < n; i++)     // Р РµС€Р°РµРј СЃРёСЃС‚РµРјСѓ Ly = b (b - СЃС‚РѕР»Р±С†С‹ РёР· РµРґРёРЅРёС‡РЅРѕР№ РјР°С‚СЂРёС†С‹)
         {
             y[i] = Ainv[i][col];
             for (int j = 0; j < i; j++)
                 y[i] -= LU[i][j] * y[j];
         }
 
-        for (int i = n - 1; i >= 0; i--)     // Решаем систему Ux = y
+        for (int i = n - 1; i >= 0; i--)     // Р РµС€Р°РµРј СЃРёСЃС‚РµРјСѓ Ux = y
         {
             x[i] = y[i];
             for (int j = i + 1; j < n; j++)
@@ -323,10 +323,10 @@ vector<vector<T>> InvLU(const vector<vector<T>>& A) // нахождение обратной матри
 }
 
 
-T matrixNorm1(const vector<vector<T>>& A) // октаэдрическая норма
+T matrixNorm1(const vector<vector<T>>& A) // РѕРєС‚Р°СЌРґСЂРёС‡РµСЃРєР°СЏ РЅРѕСЂРјР°
 {
     int n = A.size();
-    vector<T> sum(n); // хранятся суммы модулей элементов всех столбцов
+    vector<T> sum(n); // С…СЂР°РЅСЏС‚СЃСЏ СЃСѓРјРјС‹ РјРѕРґСѓР»РµР№ СЌР»РµРјРµРЅС‚РѕРІ РІСЃРµС… СЃС‚РѕР»Р±С†РѕРІ
     T maxSum = -1;
 
     for (int j = 0; j < n; j++)
@@ -341,10 +341,10 @@ T matrixNorm1(const vector<vector<T>>& A) // октаэдрическая норма
     return maxSum;
 }
 
-T matrixNormInf(const vector<vector<T>>& A) // кубическая норма
+T matrixNormInf(const vector<vector<T>>& A) // РєСѓР±РёС‡РµСЃРєР°СЏ РЅРѕСЂРјР°
 {
     int n = A.size();
-    vector<T> sum(n); // хранятся суммы модулей элементов всех строк
+    vector<T> sum(n); // С…СЂР°РЅСЏС‚СЃСЏ СЃСѓРјРјС‹ РјРѕРґСѓР»РµР№ СЌР»РµРјРµРЅС‚РѕРІ РІСЃРµС… СЃС‚СЂРѕРє
     T maxSum = -1;
 
     for (int i = 0; i < n; i++)
@@ -359,7 +359,7 @@ T matrixNormInf(const vector<vector<T>>& A) // кубическая норма
     return maxSum;
 }
 
-// Число обусловленности для различных матричных норм
+// Р§РёСЃР»Рѕ РѕР±СѓСЃР»РѕРІР»РµРЅРЅРѕСЃС‚Рё РґР»СЏ СЂР°Р·Р»РёС‡РЅС‹С… РјР°С‚СЂРёС‡РЅС‹С… РЅРѕСЂРј
 T cond1(const vector<vector<T>>& A)
 {
     vector<vector<T>> Ainv = InvLU(A);
@@ -383,7 +383,7 @@ void condEstimation(vector<vector<T>>& A, vector<T>& b, const vector<T>& disturb
     x = GaussianMethod(A, b);
     x1 = GaussianMethod(A, b1);
 
-    cout << "Решение возмущенной системы:" << endl;
+    cout << "Р РµС€РµРЅРёРµ РІРѕР·РјСѓС‰РµРЅРЅРѕР№ СЃРёСЃС‚РµРјС‹:" << endl;
     for (int i = 0; i < n; i++)
         cout << "x" << i + 1 << " = " << x1[i] << endl;
 
@@ -426,7 +426,7 @@ void condEstimationLower(vector<vector<T>>& A, vector<T>& b, int disturbCount)
         vector<T> x1(n);
         x1 = GaussianMethod(A, b1);
 
-        // cout << "Решение возмущенной системы:" << endl;
+        // cout << "Р РµС€РµРЅРёРµ РІРѕР·РјСѓС‰РµРЅРЅРѕР№ СЃРёСЃС‚РµРјС‹:" << endl;
         // for (int k = 0; k < n; k++)
         //    cout << "x" << k + 1 << " = " << x1[k] << endl;
 
