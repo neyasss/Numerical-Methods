@@ -1,4 +1,4 @@
-﻿#include <iostream>
+#include <iostream>
 #include <cmath>
 #include <vector>
 #include <fstream>
@@ -12,9 +12,6 @@ int main()
     vector<T> b;
     readSLAE("test.txt", A, b);
     int n = A.size();
-    // vector<int> order(n);
-    // for (int i = 0; i < n; i++)
-    //     order[i] = i;
 
     cout << "Исходная СЛАУ:" << endl;
     printSLAE(A, b);
