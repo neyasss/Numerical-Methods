@@ -27,9 +27,8 @@ void readSLAE(const string& file, vector<vector<T>>& A, vector<T>& b)
     fin.close();
 }
 
-void printSLAE(const vector<vector<T>>& A, const vector<T>& b) // вывод СЛАУ
+void printSLAE(const vector<vector<T>>& A, const vector<T>& b, int n) // вывод СЛАУ
 {
-    int n = A.size();
     for (int i = 0; i < n; i++)
     {
         for (int j = 0; j < n; j++)
@@ -42,9 +41,8 @@ void printSLAE(const vector<vector<T>>& A, const vector<T>& b) // вывод С�
     }
 }
 
-void printMatrix(const vector<vector<T>>& A) // вывод матрицы
+void printMatrix(const vector<vector<T>>& A, int n) // вывод матрицы
 {
-    int n = A.size();
     for (int i = 0; i < n; i++)
     {
         for (int j = 0; j < n; j++)
@@ -53,9 +51,8 @@ void printMatrix(const vector<vector<T>>& A) // вывод матрицы
     }
 }
 
-vector<vector<T>> MatrixMult(const vector<vector<T>>& A, const vector<vector<T>>& B)
+vector<vector<T>> MatrixMult(const vector<vector<T>>& A, const vector<vector<T>>& B, int n)
 {
-    int n = A.size();
     vector<vector<T>> C(n, vector<T>(n));
     for (int i = 0; i < n; i++)
     {
@@ -69,9 +66,9 @@ vector<vector<T>> MatrixMult(const vector<vector<T>>& A, const vector<vector<T>>
     return C;
 }
 
-vector<vector<T>> Transpose(const vector<vector<T>>& A) {
+vector<vector<T>> Transpose(const vector<vector<T>>& A, int n)
+{
     vector<vector<T>> A1 = A;
-    int n = A.size();
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < n; j++) {
             A1[i][j] = A[j][i];
@@ -80,9 +77,8 @@ vector<vector<T>> Transpose(const vector<vector<T>>& A) {
     return A1;
 }
 
-T vectorNorm1(const vector<T>& b)
+T vectorNorm1(const vector<T>& b, int n)
 {
-    int n = b.size();
     T norm = 0;
 
     for (int i = 0; i < n; i++)
@@ -91,9 +87,8 @@ T vectorNorm1(const vector<T>& b)
     return norm;
 }
 
-T vectorNormInf(const vector<T>& b)
+T vectorNormInf(const vector<T>& b, int n)
 {
-    int n = b.size();
     T norm = -1;
 
     for (int i = 0; i < n; i++)
@@ -106,9 +101,8 @@ T vectorNormInf(const vector<T>& b)
 }
 
 // Метод Гаусса с частичным выбором главного элемента (по столбцу)
-vector<T> GaussianMethod(vector<vector<T>>& A, vector<T>& b)
+vector<T> GaussianMethod(vector<vector<T>>& A, vector<T>& b, int n)
 {
-    int n = A.size();
     vector<T> x(n);
     vector<vector<T>> A1 = A;
     vector<T> b1 = b;
@@ -157,9 +151,8 @@ vector<T> GaussianMethod(vector<vector<T>>& A, vector<T>& b)
     return x;
 }
 
-vector<T> QRMethod(vector<vector<T>>& A, vector<T>& b)
+vector<T> QRMethod(vector<vector<T>>& A, vector<T>& b, int n)
 {
-    int n = A.size();
     vector<T> x(n);
     vector<vector<T>> A1 = A;
     vector<vector<T>> P(n, vector<T>(n));
@@ -214,13 +207,13 @@ vector<T> QRMethod(vector<vector<T>>& A, vector<T>& b)
         }
     }
 
-    vector<vector<T>> Q = Transpose(P);
+    vector<vector<T>> Q = Transpose(P, n);
     cout << endl << "Матрица Q:" << endl;
-    printMatrix(Q);
+    printMatrix(Q, n);
     cout << endl << "Матрица R:" << endl;
-    printMatrix(R);
+    printMatrix(R, n);
     cout << endl << "Матрица A (проверка):" << endl;
-    printMatrix(MatrixMult(Q, R));
+    printMatrix(MatrixMult(Q, R, n), n);
     cout << endl;
 
     vector<T> b1(n, 0);
@@ -238,9 +231,8 @@ vector<T> QRMethod(vector<vector<T>>& A, vector<T>& b)
     return x;
 }
 
-void ResidualVectorNorm(const vector<vector<T>>& A, const vector<T>& b, const vector<T>& x) // норма вектора невязки
+void ResidualVectorNorm(const vector<vector<T>>& A, const vector<T>& b, const vector<T>& x, int n) // норма вектора невязки
 {
-    int n = A.size();
     vector<T> residualVec(n);
     T result = 0;
     for (int i = 0; i < n; i++)
@@ -252,16 +244,15 @@ void ResidualVectorNorm(const vector<vector<T>>& A, const vector<T>& b, const ve
         }
     }
 
-    T norm1 = vectorNorm1(residualVec);
-    T norm2 = vectorNormInf(residualVec);
+    T norm1 = vectorNorm1(residualVec, n);
+    T norm2 = vectorNormInf(residualVec, n);
     cout << endl << "Норма вектора невязки ||b - b1||" << endl;
     cout << "для октаэдрической нормы: " << norm1 << endl;
     cout << "для кубической нормы: " << norm2 << endl;
 }
 
-vector<vector<T>> InvLU(const vector<vector<T>>& A) // нахождение обратной матрицы с помощью LU-разложения
+vector<vector<T>> InvLU(const vector<vector<T>>& A, int n) // нахождение обратной матрицы с помощью LU-разложения
 {
-    int n = A.size();
     vector<vector<T>> LU = A; // L и U хранятся как одна матрица
     vector<vector<T>> Ainv(n, vector<T>(n));
 
@@ -292,7 +283,7 @@ vector<vector<T>> InvLU(const vector<vector<T>>& A) // нахождение об
         }
     }
 
-    // printMatrix(LU);
+    // printMatrix(LU, n);
 
     for (int i = 0; i < n; i++)
         Ainv[i][i] = 1;
@@ -323,9 +314,8 @@ vector<vector<T>> InvLU(const vector<vector<T>>& A) // нахождение об
 }
 
 
-T matrixNorm1(const vector<vector<T>>& A) // октаэдрическая норма
+T matrixNorm1(const vector<vector<T>>& A, int n) // октаэдрическая норма
 {
-    int n = A.size();
     vector<T> sum(n); // хранятся суммы модулей элементов всех столбцов
     T maxSum = -1;
 
@@ -341,9 +331,8 @@ T matrixNorm1(const vector<vector<T>>& A) // октаэдрическая нор
     return maxSum;
 }
 
-T matrixNormInf(const vector<vector<T>>& A) // кубическая норма
+T matrixNormInf(const vector<vector<T>>& A, int n) // кубическая норма
 {
-    int n = A.size();
     vector<T> sum(n); // хранятся суммы модулей элементов всех строк
     T maxSum = -1;
 
@@ -360,42 +349,41 @@ T matrixNormInf(const vector<vector<T>>& A) // кубическая норма
 }
 
 // Число обусловленности для различных матричных норм
-T cond1(const vector<vector<T>>& A)
+T cond1(const vector<vector<T>>& A, int n)
 {
-    vector<vector<T>> Ainv = InvLU(A);
-    return matrixNorm1(Ainv) * matrixNorm1(A);
+    vector<vector<T>> Ainv = InvLU(A, n);
+    return matrixNorm1(Ainv, n) * matrixNorm1(A, n);
 }
 
-T condInf(const vector<vector<T>>& A)
+T condInf(const vector<vector<T>>& A, int n)
 {
-    vector<vector<T>> Ainv = InvLU(A);
-    return matrixNormInf(Ainv) * matrixNormInf(A);
+    vector<vector<T>> Ainv = InvLU(A, n);
+    return matrixNormInf(Ainv, n) * matrixNormInf(A, n);
 }
 
-void condEstimation(vector<vector<T>>& A, vector<T>& b, const vector<T>& disturb)
+void condEstimation(vector<vector<T>>& A, vector<T>& b, const vector<T>& disturb, int n)
 {
-    int n = b.size();
     vector<T> b1(n);
     for (int i = 0; i < n; i++)
         b1[i] = b[i] + disturb[i];
 
     vector<T> x(n), x1(n);
-    x = GaussianMethod(A, b);
-    x1 = GaussianMethod(A, b1);
+    x = GaussianMethod(A, b, n);
+    x1 = GaussianMethod(A, b1, n);
 
     cout << "Решение возмущенной системы:" << endl;
     for (int i = 0; i < n; i++)
         cout << "x" << i + 1 << " = " << x1[i] << endl;
 
-    T b_delta1 = vectorNorm1(disturb) / vectorNorm1(b);
-    T b_deltaInf = vectorNormInf(disturb) / vectorNormInf(b);
+    T b_delta1 = vectorNorm1(disturb, n) / vectorNorm1(b, n);
+    T b_deltaInf = vectorNormInf(disturb, n) / vectorNormInf(b, n);
 
     vector<T> dx(n);
     for (int i = 0; i < n; i++)
         dx[i] = abs(x1[i] - x[i]);
 
-    T x_delta1 = vectorNorm1(dx) / vectorNorm1(x);
-    T x_deltaInf = vectorNormInf(dx) / vectorNormInf(x);
+    T x_delta1 = vectorNorm1(dx, n) / vectorNorm1(x, n);
+    T x_deltaInf = vectorNormInf(dx, n) / vectorNormInf(x, n);
 
     T condEst1 = x_delta1 / b_delta1;
     T condEstInf = x_deltaInf / b_deltaInf;
@@ -404,14 +392,13 @@ void condEstimation(vector<vector<T>>& A, vector<T>& b, const vector<T>& disturb
     cout << condEstInf << endl;
 }
 
-void condEstimationLower(vector<vector<T>>& A, vector<T>& b, int disturbCount)
+void condEstimationLower(vector<vector<T>>& A, vector<T>& b, int n, int disturbCount)
 {
-    int n = b.size();
     T lower1 = 1e+9;
     T lowerInf = 1e+9;
 
     vector<T> x(n);
-    x = GaussianMethod(A, b);
+    x = GaussianMethod(A, b, n);
 
     vector<T> disturb = { -0.01, 0.01 };
     for (int i = 0; i < disturbCount; i++)
@@ -424,7 +411,7 @@ void condEstimationLower(vector<vector<T>>& A, vector<T>& b, int disturbCount)
         //    cout << "b" << j + 1 << " = " << b1[j] << endl;
 
         vector<T> x1(n);
-        x1 = GaussianMethod(A, b1);
+        x1 = GaussianMethod(A, b1, n);
 
         // cout << "Решение возмущенной системы:" << endl;
         // for (int k = 0; k < n; k++)
@@ -438,11 +425,11 @@ void condEstimationLower(vector<vector<T>>& A, vector<T>& b, int disturbCount)
         for (int j = 0; j < n; j++)
             dx[j] = abs(x1[j] - x[j]);
 
-        T b_delta1 = vectorNorm1(db) / vectorNorm1(b);
-        T b_deltaInf = vectorNormInf(db) / vectorNormInf(b);
+        T b_delta1 = vectorNorm1(db, n) / vectorNorm1(b, n);
+        T b_deltaInf = vectorNormInf(db, n) / vectorNormInf(b, n);
 
-        T x_delta1 = vectorNorm1(dx) / vectorNorm1(x);
-        T x_deltaInf = vectorNormInf(dx) / vectorNormInf(x);
+        T x_delta1 = vectorNorm1(dx, n) / vectorNorm1(x, n);
+        T x_deltaInf = vectorNormInf(dx, n) / vectorNormInf(x, n);
 
         T condEst1 = x_delta1 / b_delta1;
         T condEstInf = x_deltaInf / b_deltaInf;
