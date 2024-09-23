@@ -6,34 +6,34 @@
 #include <fstream>
 using namespace std;
 
-// #define T float                          // обычная точность 
-#define T double                            // повышенная точность
+// #define T float                          // РѕР±С‹С‡РЅР°СЏ С‚РѕС‡РЅРѕСЃС‚СЊ 
+#define T double                            // РїРѕРІС‹С€РµРЅРЅР°СЏ С‚РѕС‡РЅРѕСЃС‚СЊ
 
-void readSLAE(const string& file, vector<vector<T>>& A, vector<T>& b); // чтение СЛАУ из файла
+void readSLAE(const string& file, vector<vector<T>>& A, vector<T>& b); // С‡С‚РµРЅРёРµ РЎР›РђРЈ РёР· С„Р°Р№Р»Р°
 
-void printSLAE(const vector<vector<T>>& A, const vector<T>& b); // вывод СЛАУ на экран
-void printMatrix(const vector<vector<T>>& A); // вывод матрицы на экран
+void printSLAE(const vector<vector<T>>& A, const vector<T>& b); // РІС‹РІРѕРґ РЎР›РђРЈ РЅР° СЌРєСЂР°РЅ
+void printMatrix(const vector<vector<T>>& A); // РІС‹РІРѕРґ РјР°С‚СЂРёС†С‹ РЅР° СЌРєСЂР°РЅ
 
-vector<vector<T>> MatrixMult(const vector<vector<T>>& A, const vector<vector<T>>& B); // умножение матриц
-vector<vector<T>> Transpose(const vector<vector<T>>& A); // транспонирование (для QR-разложения)
+vector<vector<T>> MatrixMult(const vector<vector<T>>& A, const vector<vector<T>>& B); // СѓРјРЅРѕР¶РµРЅРёРµ РјР°С‚СЂРёС†
+vector<vector<T>> Transpose(const vector<vector<T>>& A); // С‚СЂР°РЅСЃРїРѕРЅРёСЂРѕРІР°РЅРёРµ (РґР»СЏ QR-СЂР°Р·Р»РѕР¶РµРЅРёСЏ)
 
-vector<T> GaussianMethod(vector<vector<T>>& A, vector<T>& b); // Метод Гаусса с частичным выбором главного элемента (по столбцу)
+vector<T> GaussianMethod(vector<vector<T>>& A, vector<T>& b); // РњРµС‚РѕРґ Р“Р°СѓСЃСЃР° СЃ С‡Р°СЃС‚РёС‡РЅС‹Рј РІС‹Р±РѕСЂРѕРј РіР»Р°РІРЅРѕРіРѕ СЌР»РµРјРµРЅС‚Р° (РїРѕ СЃС‚РѕР»Р±С†Сѓ)
 
-vector<T> QRMethod(vector<vector<T>>& A, vector<T>& b); // Решение методом QR-разложения
+vector<T> QRMethod(vector<vector<T>>& A, vector<T>& b); // Р РµС€РµРЅРёРµ РјРµС‚РѕРґРѕРј QR-СЂР°Р·Р»РѕР¶РµРЅРёСЏ
 
-void ResidualVectorNorm(const vector<vector<T>>& A, const vector<T>& b, const vector<T>& x); // норма вектора невязки (обе нормы)
+void ResidualVectorNorm(const vector<vector<T>>& A, const vector<T>& b, const vector<T>& x); // РЅРѕСЂРјР° РІРµРєС‚РѕСЂР° РЅРµРІСЏР·РєРё (РѕР±Рµ РЅРѕСЂРјС‹)
 
-vector<vector<T>> InvLU(const vector<vector<T>>& A); // нахождение обратной матрицы с помощью LU-разложения
+vector<vector<T>> InvLU(const vector<vector<T>>& A); // РЅР°С…РѕР¶РґРµРЅРёРµ РѕР±СЂР°С‚РЅРѕР№ РјР°С‚СЂРёС†С‹ СЃ РїРѕРјРѕС‰СЊСЋ LU-СЂР°Р·Р»РѕР¶РµРЅРёСЏ
 
-T vectorNorm1(const vector<T>& b); // векторная октаэдрическая норма
-T vectorNormInf(const vector<T>& b); // векторная кубическая норма
+T vectorNorm1(const vector<T>& b); // РІРµРєС‚РѕСЂРЅР°СЏ РѕРєС‚Р°СЌРґСЂРёС‡РµСЃРєР°СЏ РЅРѕСЂРјР°
+T vectorNormInf(const vector<T>& b); // РІРµРєС‚РѕСЂРЅР°СЏ РєСѓР±РёС‡РµСЃРєР°СЏ РЅРѕСЂРјР°
 
-T matrixNorm1(const vector<vector<T>>& A); // матричная октаэдрическая норма
-T matrixNormInf(const vector<vector<T>>& A); // матричная кубическая норма
+T matrixNorm1(const vector<vector<T>>& A); // РјР°С‚СЂРёС‡РЅР°СЏ РѕРєС‚Р°СЌРґСЂРёС‡РµСЃРєР°СЏ РЅРѕСЂРјР°
+T matrixNormInf(const vector<vector<T>>& A); // РјР°С‚СЂРёС‡РЅР°СЏ РєСѓР±РёС‡РµСЃРєР°СЏ РЅРѕСЂРјР°
 
-// Число обусловленности для различных матричных норм
+// Р§РёСЃР»Рѕ РѕР±СѓСЃР»РѕРІР»РµРЅРЅРѕСЃС‚Рё РґР»СЏ СЂР°Р·Р»РёС‡РЅС‹С… РјР°С‚СЂРёС‡РЅС‹С… РЅРѕСЂРј
 T cond1(const vector<vector<T>>& A);
 T condInf(const vector<vector<T>>& A);
 
-void condEstimation(vector<vector<T>>& A, vector<T>& b, const vector<T>& disturb); // вектор возмущения как аргумент, вычисляет 1 раз
-void condEstimationLower(vector<vector<T>>& A, vector<T>& b, int disturbCount = 5); // решение несколько раз и оценка
+void condEstimation(vector<vector<T>>& A, vector<T>& b, const vector<T>& disturb); // РІРµРєС‚РѕСЂ РІРѕР·РјСѓС‰РµРЅРёСЏ РєР°Рє Р°СЂРіСѓРјРµРЅС‚, РІС‹С‡РёСЃР»СЏРµС‚ 1 СЂР°Р·
+void condEstimationLower(vector<vector<T>>& A, vector<T>& b, int disturbCount = 5); // СЂРµС€РµРЅРёРµ РЅРµСЃРєРѕР»СЊРєРѕ СЂР°Р· Рё РѕС†РµРЅРєР°
