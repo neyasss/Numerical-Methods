@@ -8,44 +8,44 @@
 #include <fstream>
 using namespace std;
 
-// #define T float                          // обычная точность 
-#define T double                            // повышенная точность
+// #define T float                          // Г®ГЎГ»Г·Г­Г Гї ГІГ®Г·Г­Г®Г±ГІГј 
+#define T double                            // ГЇГ®ГўГ»ГёГҐГ­Г­Г Гї ГІГ®Г·Г­Г®Г±ГІГј
 
-// лр1
+// Г«Г°1
 
-void readSLAE(const string& file, vector<vector<T>>& A, vector<T>& b); // чтение СЛАУ из файла
+void readSLAE(const string& file, vector<vector<T>>& A, vector<T>& b); // Г·ГІГҐГ­ГЁГҐ Г‘Г‹ГЂГ“ ГЁГ§ ГґГ Г©Г«Г 
 
-void printSLAE(const vector<vector<T>>& A, const vector<T>& b, int n); // вывод СЛАУ на экран
-void printMatrix(const vector<vector<T>>& A, int n); // вывод матрицы на экран
+void printSLAE(const vector<vector<T>>& A, const vector<T>& b, int n); // ГўГ»ГўГ®Г¤ Г‘Г‹ГЂГ“ Г­Г  ГЅГЄГ°Г Г­
+void printMatrix(const vector<vector<T>>& A, int n); // ГўГ»ГўГ®Г¤ Г¬Г ГІГ°ГЁГ¶Г» Г­Г  ГЅГЄГ°Г Г­
 
-vector<vector<T>> MatrixMult(const vector<vector<T>>& A, const vector<vector<T>>& B, int n); // умножение матриц
-vector<vector<T>> Transpose(const vector<vector<T>>& A, int n); // транспонирование
+vector<vector<T>> MatrixMult(const vector<vector<T>>& A, const vector<vector<T>>& B, int n); // ГіГ¬Г­Г®Г¦ГҐГ­ГЁГҐ Г¬Г ГІГ°ГЁГ¶
+vector<vector<T>> Transpose(const vector<vector<T>>& A, int n); // ГІГ°Г Г­Г±ГЇГ®Г­ГЁГ°Г®ГўГ Г­ГЁГҐ
 
-T ResidualVectorNorm(const vector<vector<T>>& A, const vector<T>& b, const vector<T>& x, int n, int norm); // норма вектора невязки
+T ResidualVectorNorm(const vector<vector<T>>& A, const vector<T>& b, const vector<T>& x, int n, int norm); // Г­Г®Г°Г¬Г  ГўГҐГЄГІГ®Г°Г  Г­ГҐГўГїГ§ГЄГЁ
 
-vector<vector<T>> InvLU(const vector<vector<T>>& A, int n); // нахождение обратной матрицы с помощью LU-разложения
+vector<vector<T>> InvLU(const vector<vector<T>>& A, int n); // Г­Г ГµГ®Г¦Г¤ГҐГ­ГЁГҐ Г®ГЎГ°Г ГІГ­Г®Г© Г¬Г ГІГ°ГЁГ¶Г» Г± ГЇГ®Г¬Г®Г№ГјГѕ LU-Г°Г Г§Г«Г®Г¦ГҐГ­ГЁГї
 
-T vectorNorm1(const vector<T>& b, int n); // векторная октаэдрическая норма
-T vectorNormInf(const vector<T>& b, int n); // векторная кубическая норма
+T vectorNorm1(const vector<T>& b, int n); // ГўГҐГЄГІГ®Г°Г­Г Гї Г®ГЄГІГ ГЅГ¤Г°ГЁГ·ГҐГ±ГЄГ Гї Г­Г®Г°Г¬Г 
+T vectorNormInf(const vector<T>& b, int n); // ГўГҐГЄГІГ®Г°Г­Г Гї ГЄГіГЎГЁГ·ГҐГ±ГЄГ Гї Г­Г®Г°Г¬Г 
 
-T matrixNorm1(const vector<vector<T>>& A, int n); // матричная октаэдрическая норма
-T matrixNormInf(const vector<vector<T>>& A, int n); // матричная кубическая норма
+T matrixNorm1(const vector<vector<T>>& A, int n); // Г¬Г ГІГ°ГЁГ·Г­Г Гї Г®ГЄГІГ ГЅГ¤Г°ГЁГ·ГҐГ±ГЄГ Гї Г­Г®Г°Г¬Г 
+T matrixNormInf(const vector<vector<T>>& A, int n); // Г¬Г ГІГ°ГЁГ·Г­Г Гї ГЄГіГЎГЁГ·ГҐГ±ГЄГ Гї Г­Г®Г°Г¬Г 
 
-// Число обусловленности для различных матричных норм
+// Г—ГЁГ±Г«Г® Г®ГЎГіГ±Г«Г®ГўГ«ГҐГ­Г­Г®Г±ГІГЁ Г¤Г«Гї Г°Г Г§Г«ГЁГ·Г­Г»Гµ Г¬Г ГІГ°ГЁГ·Г­Г»Гµ Г­Г®Г°Г¬
 T cond1(const vector<vector<T>>& A, int n);
 T condInf(const vector<vector<T>>& A, int n);
 
 ///////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////
 // 
-// лр2
+// Г«Г°2
 
 struct Params
 {
 	vector<vector<T>> C;
 	vector<T> y;
-	vector<T> x; // решение
-	int iterCount; // количество итераций
+	vector<T> x; // Г°ГҐГёГҐГ­ГЁГҐ
+	int iterCount; // ГЄГ®Г«ГЁГ·ГҐГ±ГІГўГ® ГЁГІГҐГ°Г Г¶ГЁГ©
 	T normC1, normCInf;
 };
 
