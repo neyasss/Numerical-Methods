@@ -27,7 +27,7 @@ void readSLAE(const string& file, vector<vector<T>>& A, vector<T>& b)
     fin.close();
 }
 
-void printSLAE(const vector<vector<T>>& A, const vector<T>& b, int n) // вывод СЛАУ
+void printSLAE(const vector<vector<T>>& A, const vector<T>& b, int n) // РІС‹РІРѕРґ РЎР›РђРЈ
 {
     for (int i = 0; i < n; i++)
     {
@@ -41,7 +41,7 @@ void printSLAE(const vector<vector<T>>& A, const vector<T>& b, int n) // вывод С
     }
 }
 
-void printMatrix(const vector<vector<T>>& A, int n) // вывод матрицы
+void printMatrix(const vector<vector<T>>& A, int n) // РІС‹РІРѕРґ РјР°С‚СЂРёС†С‹
 {
     for (int i = 0; i < n; i++)
     {
@@ -100,7 +100,7 @@ T vectorNormInf(const vector<T>& b, int n)
     return norm;
 }
 
-T ResidualVectorNorm(const vector<vector<T>>& A, const vector<T>& b, const vector<T>& x, int n, int norm) // норма вектора невязки
+T ResidualVectorNorm(const vector<vector<T>>& A, const vector<T>& b, const vector<T>& x, int n, int norm) // РЅРѕСЂРјР° РІРµРєС‚РѕСЂР° РЅРµРІСЏР·РєРё
 {
     vector<T> residualVec(n);
     T result = 0;
@@ -109,7 +109,7 @@ T ResidualVectorNorm(const vector<vector<T>>& A, const vector<T>& b, const vecto
         residualVec[i] = b[i];
         for (int j = 0; j < n; j++)
         {
-            residualVec[i] -= A[i][j] * x[j]; // вычисляем компоненты вектора невязки
+            residualVec[i] -= A[i][j] * x[j]; // РІС‹С‡РёСЃР»СЏРµРј РєРѕРјРїРѕРЅРµРЅС‚С‹ РІРµРєС‚РѕСЂР° РЅРµРІСЏР·РєРё
         }
     }
 
@@ -127,9 +127,9 @@ T ResidualVectorNorm(const vector<vector<T>>& A, const vector<T>& b, const vecto
         return 0;
 }
 
-vector<vector<T>> InvLU(const vector<vector<T>>& A, int n) // нахождение обратной матрицы с помощью LU-разложения
+vector<vector<T>> InvLU(const vector<vector<T>>& A, int n) // РЅР°С…РѕР¶РґРµРЅРёРµ РѕР±СЂР°С‚РЅРѕР№ РјР°С‚СЂРёС†С‹ СЃ РїРѕРјРѕС‰СЊСЋ LU-СЂР°Р·Р»РѕР¶РµРЅРёСЏ
 {
-    vector<vector<T>> LU = A; // L и U хранятся как одна матрица
+    vector<vector<T>> LU = A; // L Рё U С…СЂР°РЅСЏС‚СЃСЏ РєР°Рє РѕРґРЅР° РјР°С‚СЂРёС†Р°
     vector<vector<T>> Ainv(n, vector<T>(n));
 
     for (int i = 0; i < n; i++)
@@ -149,12 +149,12 @@ vector<vector<T>> InvLU(const vector<vector<T>>& A, int n) // нахождение обратно
         for (int j = i; j < n; j++)
         {
             for (int k = 0; k < i; k++)
-                LU[i][j] -= LU[i][k] * LU[k][j]; // элементы матрицы L (нижнетреугольная с единицами на главной диагонали)
+                LU[i][j] -= LU[i][k] * LU[k][j]; // СЌР»РµРјРµРЅС‚С‹ РјР°С‚СЂРёС†С‹ L (РЅРёР¶РЅРµС‚СЂРµСѓРіРѕР»СЊРЅР°СЏ СЃ РµРґРёРЅРёС†Р°РјРё РЅР° РіР»Р°РІРЅРѕР№ РґРёР°РіРѕРЅР°Р»Рё)
         }
         for (int j = i + 1; j < n; j++)
         {
             for (int k = 0; k < i; k++)
-                LU[j][i] -= LU[j][k] * LU[k][i]; // элементы матрицы U (верхнетреугольная)
+                LU[j][i] -= LU[j][k] * LU[k][i]; // СЌР»РµРјРµРЅС‚С‹ РјР°С‚СЂРёС†С‹ U (РІРµСЂС…РЅРµС‚СЂРµСѓРіРѕР»СЊРЅР°СЏ)
             LU[j][i] /= LU[i][i];
         }
     }
@@ -167,14 +167,14 @@ vector<vector<T>> InvLU(const vector<vector<T>>& A, int n) // нахождение обратно
     for (int col = 0; col < n; col++)
     {
         vector<T> y(n), x(n);
-        for (int i = 0; i < n; i++)     // Решаем систему Ly = b (b - столбцы из единичной матрицы)
+        for (int i = 0; i < n; i++)     // Р РµС€Р°РµРј СЃРёСЃС‚РµРјСѓ Ly = b (b - СЃС‚РѕР»Р±С†С‹ РёР· РµРґРёРЅРёС‡РЅРѕР№ РјР°С‚СЂРёС†С‹)
         {
             y[i] = Ainv[i][col];
             for (int j = 0; j < i; j++)
                 y[i] -= LU[i][j] * y[j];
         }
 
-        for (int i = n - 1; i >= 0; i--)     // Решаем систему Ux = y
+        for (int i = n - 1; i >= 0; i--)     // Р РµС€Р°РµРј СЃРёСЃС‚РµРјСѓ Ux = y
         {
             x[i] = y[i];
             for (int j = i + 1; j < n; j++)
@@ -190,9 +190,9 @@ vector<vector<T>> InvLU(const vector<vector<T>>& A, int n) // нахождение обратно
 }
 
 
-T matrixNorm1(const vector<vector<T>>& A, int n) // октаэдрическая норма
+T matrixNorm1(const vector<vector<T>>& A, int n) // РѕРєС‚Р°СЌРґСЂРёС‡РµСЃРєР°СЏ РЅРѕСЂРјР°
 {
-    vector<T> sum(n); // хранятся суммы модулей элементов всех столбцов
+    vector<T> sum(n); // С…СЂР°РЅСЏС‚СЃСЏ СЃСѓРјРјС‹ РјРѕРґСѓР»РµР№ СЌР»РµРјРµРЅС‚РѕРІ РІСЃРµС… СЃС‚РѕР»Р±С†РѕРІ
     T maxSum = -1;
 
     for (int j = 0; j < n; j++)
@@ -207,9 +207,9 @@ T matrixNorm1(const vector<vector<T>>& A, int n) // октаэдрическая норма
     return maxSum;
 }
 
-T matrixNormInf(const vector<vector<T>>& A, int n) // кубическая норма
+T matrixNormInf(const vector<vector<T>>& A, int n) // РєСѓР±РёС‡РµСЃРєР°СЏ РЅРѕСЂРјР°
 {
-    vector<T> sum(n); // хранятся суммы модулей элементов всех строк
+    vector<T> sum(n); // С…СЂР°РЅСЏС‚СЃСЏ СЃСѓРјРјС‹ РјРѕРґСѓР»РµР№ СЌР»РµРјРµРЅС‚РѕРІ РІСЃРµС… СЃС‚СЂРѕРє
     T maxSum = -1;
 
     for (int i = 0; i < n; i++)
@@ -224,7 +224,7 @@ T matrixNormInf(const vector<vector<T>>& A, int n) // кубическая норма
     return maxSum;
 }
 
-// Число обусловленности для различных матричных норм
+// Р§РёСЃР»Рѕ РѕР±СѓСЃР»РѕРІР»РµРЅРЅРѕСЃС‚Рё РґР»СЏ СЂР°Р·Р»РёС‡РЅС‹С… РјР°С‚СЂРёС‡РЅС‹С… РЅРѕСЂРј
 T cond1(const vector<vector<T>>& A, int n)
 {
     vector<vector<T>> Ainv = InvLU(A, n);
@@ -240,10 +240,10 @@ T condInf(const vector<vector<T>>& A, int n)
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // 
-// лр2
+// Р»СЂ2
 
-// переопределение некоторых операторов для удобства использования в итерационных методах
-vector<vector<T>> operator*(const vector<vector<T>>& A, const T& num) // умножение матрицы на число
+// РїРµСЂРµРѕРїСЂРµРґРµР»РµРЅРёРµ РЅРµРєРѕС‚РѕСЂС‹С… РѕРїРµСЂР°С‚РѕСЂРѕРІ РґР»СЏ СѓРґРѕР±СЃС‚РІР° РёСЃРїРѕР»СЊР·РѕРІР°РЅРёСЏ РІ РёС‚РµСЂР°С†РёРѕРЅРЅС‹С… РјРµС‚РѕРґР°С…
+vector<vector<T>> operator*(const vector<vector<T>>& A, const T& num) // СѓРјРЅРѕР¶РµРЅРёРµ РјР°С‚СЂРёС†С‹ РЅР° С‡РёСЃР»Рѕ
 {
     int n = A.size();
     vector<vector<T>> B = A;
@@ -255,7 +255,7 @@ vector<vector<T>> operator*(const vector<vector<T>>& A, const T& num) // умножен
     return B;
 }
 
-vector<T> operator*(const vector<vector<T>>& A, const vector<T>& x) // умножение матрицы на вектор
+vector<T> operator*(const vector<vector<T>>& A, const vector<T>& x) // СѓРјРЅРѕР¶РµРЅРёРµ РјР°С‚СЂРёС†С‹ РЅР° РІРµРєС‚РѕСЂ
 {
     int n = A.size();
     vector<T> y(n);
@@ -267,7 +267,7 @@ vector<T> operator*(const vector<vector<T>>& A, const vector<T>& x) // умножение
     return y;
 }
 
-vector<vector<T>> operator+(const vector<vector<T>>& A, const vector<vector<T>>& B) // сложение матриц
+vector<vector<T>> operator+(const vector<vector<T>>& A, const vector<vector<T>>& B) // СЃР»РѕР¶РµРЅРёРµ РјР°С‚СЂРёС†
 {
     int n = A.size();
     vector<vector<T>> C = A;
@@ -279,7 +279,7 @@ vector<vector<T>> operator+(const vector<vector<T>>& A, const vector<vector<T>>&
     return C;
 }
 
-vector<vector<T>> operator-(const vector<vector<T>>& A, const vector<vector<T>>& B) // вычитание матриц
+vector<vector<T>> operator-(const vector<vector<T>>& A, const vector<vector<T>>& B) // РІС‹С‡РёС‚Р°РЅРёРµ РјР°С‚СЂРёС†
 {
     int n = A.size();
     vector<vector<T>> C = A;
@@ -291,7 +291,7 @@ vector<vector<T>> operator-(const vector<vector<T>>& A, const vector<vector<T>>&
     return C;
 }
 
-vector<T> operator+(const vector<T>& x, const vector<T>& y) // сложение векторов
+vector<T> operator+(const vector<T>& x, const vector<T>& y) // СЃР»РѕР¶РµРЅРёРµ РІРµРєС‚РѕСЂРѕРІ
 {
     int n = x.size();
     vector<T> v = x;
@@ -300,7 +300,7 @@ vector<T> operator+(const vector<T>& x, const vector<T>& y) // сложение векторов
     return v;
 }
 
-vector<T> operator-(const vector<T>& x, const vector<T>& y) // вычитание векторов
+vector<T> operator-(const vector<T>& x, const vector<T>& y) // РІС‹С‡РёС‚Р°РЅРёРµ РІРµРєС‚РѕСЂРѕРІ
 {
     int n = x.size();
     vector<T> v = x;
@@ -309,14 +309,14 @@ vector<T> operator-(const vector<T>& x, const vector<T>& y) // вычитание векторо
     return v;
 }
 
-// Метод простых итераций
+// РњРµС‚РѕРґ РїСЂРѕСЃС‚С‹С… РёС‚РµСЂР°С†РёР№
 Params SimpleIterationMethod(vector<vector<T>>& A, vector<T> b, vector<T> x0, const T& tau, const T& eps, int n, int norm)
 {
     Params params;
     vector<T> y(n), xk(n), xnext(n);
     int maxIter = 1000;
-    xk = x0; // x0 - начальное приближение, xk - на k-м шаге итерации
-    xnext = xk; // k+1 итерация
+    xk = x0; // x0 - РЅР°С‡Р°Р»СЊРЅРѕРµ РїСЂРёР±Р»РёР¶РµРЅРёРµ, xk - РЅР° k-Рј С€Р°РіРµ РёС‚РµСЂР°С†РёРё
+    xnext = xk; // k+1 РёС‚РµСЂР°С†РёСЏ
     for (int i = 0; i < n; i++)
         y[i] = tau * b[i];
     params.y = y;
@@ -335,7 +335,7 @@ Params SimpleIterationMethod(vector<vector<T>>& A, vector<T> b, vector<T> x0, co
     {
         xnext = C * xk + y;
 
-        // Критерии останова итерационного процесса
+        // РљСЂРёС‚РµСЂРёРё РѕСЃС‚Р°РЅРѕРІР° РёС‚РµСЂР°С†РёРѕРЅРЅРѕРіРѕ РїСЂРѕС†РµСЃСЃР°
         if (norm == 1)
         {
             if (ResidualVectorNorm(A, b, xnext, n, norm) < eps || vectorNorm1(xnext - xk, n) < eps
@@ -364,7 +364,7 @@ Params SimpleIterationMethod(vector<vector<T>>& A, vector<T> b, vector<T> x0, co
     return params;
 }
 
-void LDU(vector<vector<T>>& A, vector<vector<T>>& L, vector<vector<T>>& D, vector<vector<T>>& U, int n) // представление матрицы A = L + D + U
+void LDU(vector<vector<T>>& A, vector<vector<T>>& L, vector<vector<T>>& D, vector<vector<T>>& U, int n) // РїСЂРµРґСЃС‚Р°РІР»РµРЅРёРµ РјР°С‚СЂРёС†С‹ A = L + D + U
 {
     for (int i = 0; i < n; i++)
     {
@@ -382,7 +382,7 @@ void LDU(vector<vector<T>>& A, vector<vector<T>>& L, vector<vector<T>>& D, vecto
 
 Params JacobiMethod(vector<vector<T>>& A, vector<T> b, vector<T> x0, const T& eps, int n, int norm)
 {
-    // С помощью LDU-разложения
+    // РЎ РїРѕРјРѕС‰СЊСЋ LDU-СЂР°Р·Р»РѕР¶РµРЅРёСЏ
     /*
     Params params;
     vector<T> y(n), xk(n), xnext(n);
@@ -402,7 +402,7 @@ Params JacobiMethod(vector<vector<T>>& A, vector<T> b, vector<T> x0, const T& ep
     params.C = C;
     */
 
-    // По формулам (методичка)
+    // РџРѕ С„РѕСЂРјСѓР»Р°Рј (РјРµС‚РѕРґРёС‡РєР°)
     Params params;
     vector<T> y(n), xk(n), xnext(n);
     xk = x0;
