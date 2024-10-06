@@ -326,7 +326,6 @@ Params SimpleIterationMethod(vector<vector<T>>& A, vector<T> b, vector<T> x0, co
         E[i][i] = 1;
 
     C = E - A * tau;
-    printMatrix(C, n);
     params.C = C;
     params.normC1 = matrixNorm1(C, n);
     params.normCInf = matrixNormInf(C, n);
@@ -421,6 +420,8 @@ Params JacobiMethod(vector<vector<T>>& A, vector<T> b, vector<T> x0, const T& ep
 
     params.y = y;
     params.C = C;
+    params.normC1 = matrixNorm1(C, n);
+    params.normCInf = matrixNormInf(C, n);
 
     for (int iter = 0; iter < maxIter; iter++)
     {
@@ -454,14 +455,76 @@ Params JacobiMethod(vector<vector<T>>& A, vector<T> b, vector<T> x0, const T& ep
     return params;
 }
 
-/*
-Params SeidelMethod(vector<vector<T>>& A, vector<T> b, vector<T> x0, const T& tau, const T& eps, int n, int norm)
-{
 
+Params SeidelMethod(vector<vector<T>>& A, vector<T> b, vector<T> x0, const T& eps, int n, int norm)
+{
+    Params params = RelaxationMethod(A, b, x0, 1, eps, n, norm); // частный случай метода релаксации (omega = 1)
+    return params;
 }
 
-Params RelaxationMethod(vector<vector<T>>& A, vector<T> b, vector<T> x0, const T& tau, const T& eps, int n, int norm)
-{
 
+Params RelaxationMethod(vector<vector<T>>& A, vector<T> b, vector<T> x0, const T& omega, const T& eps, int n, int norm)
+{
+    Params params;
+    int maxIter = 100;
+    vector<T> y(n), xk(n);
+    xk = x0;
+    vector<vector<T>> L(n, vector<T>(n)), D(n, vector<T>(n)), U(n, vector<T>(n));
+    LDU(A, L, D, U, n);
+    vector<vector<T>> invD(n, vector<T>(n));
+    for (int i = 0; i < n; i++)
+        invD[i][i] = 1 / D[i][i];
+    vector<vector<T>> C(n, vector<T>(n)), E(n, vector<T>(n));
+    for (int i = 0; i < n; i++)
+        E[i][i] = 1;
+
+    C = MatrixMult(InvLU(E + MatrixMult(invD, L, n) * omega, n), (E * (1 - omega) - MatrixMult(invD, U, n) * omega), n);
+    y = MatrixMult(InvLU(E + MatrixMult(invD, L, n) * omega, n), invD * omega, n) * b;
+    params.C = C;
+    params.normC1 = matrixNorm1(C, n);
+    params.normCInf = matrixNormInf(C, n);
+    params.y = y;
+
+    vector<vector<T>> CL(n, vector<T>(n)), CD(n, vector<T>(n)), CU(n, vector<T>(n));
+    LDU(C, CL, CD, CU, n);
+
+    for (int iter = 0; iter < maxIter; iter++)
+    {
+        vector<T> xnext(n);
+        for (int i = 0; i < n; i++)
+        {
+            T sum1 = 0, sum2 = 0;
+            for (int j = 0; j < i; j++)
+                sum1 += A[i][j] * xnext[j];
+            for (int j = i + 1; j < n; j++)
+                sum2 += A[i][j] * xk[j];
+
+            xnext[i] = (1 - omega) * xk[i] + omega * (b[i] - sum1 - sum2) / A[i][i];
+        }
+        if (norm == 1)
+        {
+            if (ResidualVectorNorm(A, b, xnext, n, norm) < eps || vectorNorm1(xnext - xk, n) < eps
+                || vectorNorm1(xnext - xk, n) <= (1 - matrixNorm1(C, n)) / matrixNorm1(C, n) * eps)
+            {
+                params.x = xnext;
+                params.iterCount = iter + 1;
+                return params;
+            }
+        }
+
+        if (norm == 0)
+        {
+            if (ResidualVectorNorm(A, b, xnext, n, norm) < eps || vectorNormInf(xnext - xk, n) < eps
+                || vectorNormInf(xnext - xk, n) <= (1 - matrixNormInf(C, n)) / matrixNormInf(C, n) * eps)
+            {
+                params.x = xnext;
+                params.iterCount = iter + 1;
+                return params;
+            }
+        }
+        xk = xnext;
+    }
+    params.x = xk;
+    params.iterCount = maxIter;
+    return params;
 }
-*/
