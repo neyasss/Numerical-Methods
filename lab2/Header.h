@@ -44,7 +44,7 @@ struct Params
 	vector<T> y;
 	vector<T> x; // решение
 	int iterCount; // количество итераций
-	T normC1, normCInf;
+	T normC1, normCInf; // нормы матрицы C
 };
 
 void LDU(vector<vector<T>>& A, vector<vector<T>>& L, vector<vector<T>>& D, vector<vector<T>>& U, int n);
@@ -53,6 +53,6 @@ Params SimpleIterationMethod(vector<vector<T>>& A, vector<T> b, vector<T> x0, co
 
 Params JacobiMethod(vector<vector<T>>& A, vector<T> b, vector<T> x0, const T& eps, int n, int norm);
 
-Params SeidelMethod(vector<vector<T>>& A, vector<T> b, vector<T> x0, const T& tau, const T& eps, int n, int norm);
+Params SeidelMethod(vector<vector<T>>& A, vector<T> b, vector<T> x0, const T& eps, int n, int norm);
 
-Params RelaxationMethod(vector<vector<T>>& A, vector<T> b, vector<T> x0, const T& tau, const T& eps, int n, int norm);
+Params RelaxationMethod(vector<vector<T>>& A, vector<T> b, vector<T> x0, const T& omega, const T& eps, int n, int norm);
