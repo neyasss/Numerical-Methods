@@ -127,34 +127,6 @@ T ResidualVectorNorm(const vector<vector<T>>& A, const vector<T>& b, const vecto
         return 0;
 }
 
-/*
-vector<T> GenDiagVec(vector<T>& a, int num, int ind)
-{
-    int n = a.size();
-    for (int i = 0; i < n; i++) {
-        a[i] = num;
-    }
-    if (ind == 0)
-        a[0] = 0;
-    if (ind == 1)
-        a[n] = 0;
-    return a;
-}*/
-
-/*
-vector<T> GenResultVec(vector<T>& d)
-{
-    int n = d.size();
-    vector<T> d(n);
-    d[0] = 6;
-    for (int i = 1; i < n; i++) {
-        d[i] = 10 - 2 * (i % 2);
-    }
-    d[n] = 9 - 3 * (n % 2);
-    return d;
-}*/
-
-
 T ResidualVectorNormTriDiagonal(vector<T> a, vector<T> b, vector<T> c, vector<T> d, const vector<T>& x, int n, int norm)
 {
     vector<T> residualVec(n);
@@ -602,26 +574,26 @@ Params RelaxationMethodTriDiagonal(vector<T> a, vector<T> b, vector<T> c, vector
 {
     Params params;
     int maxIter = 1e9;
-    vector<T> xk(n) = x0;
- for (int iter = 0; iter < maxIter; iter++)
+    vector<T> xk = x0;
+    for (int iter = 0; iter < maxIter; iter++)
     {
         T difference = 0;
-        vector<T> xnext(n);
+        // vector<T> xnext(n);
         for (int i = 0; i < n; i++)
         {
             T sum1 = 0, sum2 = 0;
-             if (i > 0) {
+            if (i > 0) {
                 sum1 += a[i] * xk[i - 1];
             }
             if (i < n - 1) {
-                sum += c[i] * xk[i + 1];
+                sum2 += c[i] * xk[i + 1];
             }
-            xnext[i] = (1 - omega) * xk[i] + omega * (b[i] - sum1 - sum2) / d[i];
-            difference = max(xnext[i], abs(xk[i] - xnext[i]));
+            T xnext_i = (1 - omega) * xk[i] + omega * (d[i] - sum1 - sum2) / b[i];
+            difference = max(difference, abs(xk[i] - xnext_i));
+            xk[i] = xnext_i;
         }
-        xk = xnext;
         if (difference < eps) {
-            params.x = xnext;
+            params.x = xk;
             params.iterCount = iter + 1;
             return params;
         }
