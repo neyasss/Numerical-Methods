@@ -602,23 +602,21 @@ Params RelaxationMethodTriDiagonal(vector<T> a, vector<T> b, vector<T> c, vector
 {
     Params params;
     int maxIter = 1e9;
-    vector<T> y(n), xk(n);
-    xk = x0;
-    vector<T> invb(n);
-    T difference = 0;
-    for (int i = 0; i < n; i++)
-        invb[i] = 1 / b[i];
-
-    for (int iter = 0; iter < maxIter; iter++)
+    vector<T> xk(n) = x0;
+ for (int iter = 0; iter < maxIter; iter++)
     {
-
+        T difference = 0;
         vector<T> xnext(n);
         for (int i = 0; i < n; i++)
         {
             T sum1 = 0, sum2 = 0;
-            sum1 += c[i] * xnext[i];
-            sum2 += a[i] * xk[i];
-            xnext[i] = (1 - omega) * xk[i] + omega * (b[i] - sum1 - sum2) / b[i];
+             if (i > 0) {
+                sum1 += a[i] * xk[i - 1];
+            }
+            if (i < n - 1) {
+                sum += c[i] * xk[i + 1];
+            }
+            xnext[i] = (1 - omega) * xk[i] + omega * (b[i] - sum1 - sum2) / d[i];
             difference = max(xnext[i], abs(xk[i] - xnext[i]));
         }
         xk = xnext;
