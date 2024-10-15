@@ -16,14 +16,10 @@ void readSLAE(const string& file, vector<vector<T>>& A, vector<T>& b); // чте
 void printSLAE(const vector<vector<T>>& A, const vector<T>& b, int n); // вывод СЛАУ на экран
 void printMatrix(const vector<vector<T>>& A, int n); // вывод матрицы на экран
 
-vector<T> GenDiagVec(vector<T>& a, int num); // генерация диагональных векторов
-vector<T> GenResultVec(vector<T>& d, int num); // генерация диагональных векторов
-
 vector<vector<T>> MatrixMult(const vector<vector<T>>& A, const vector<vector<T>>& B, int n); // умножение матриц
 vector<vector<T>> Transpose(const vector<vector<T>>& A, int n); // транспонирование
 
 T ResidualVectorNorm(const vector<vector<T>>& A, const vector<T>& b, const vector<T>& x, int n, int norm); // норма вектора невязки
-T ResidualVectorNormTriDiagonal(vector<T> a, vector<T> b, vector<T> c, vector<T> d, const vector<T>& x, int n, int norm); // норма вектора невязки для тридиагональной матрицы
 
 vector<vector<T>> InvLU(const vector<vector<T>>& A, int n); // нахождение обратной матрицы с помощью LU-разложения
 
@@ -50,6 +46,10 @@ struct Params
 	int iterCount; // количество итераций
 	T normC1, normCInf; // нормы матрицы C
 };
+
+// vector<T> GenDiagVec(vector<T>& a, int num, int ind); // генерация диагональных векторов
+// vector<T> GenResultVec(vector<T>& d); // генерация диагональных векторов
+T ResidualVectorNormTriDiagonal(vector<T> a, vector<T> b, vector<T> c, vector<T> d, const vector<T>& x, int n, int norm); // норма вектора невязки для тридиагональной матрицы
 
 void LDU(vector<vector<T>>& A, vector<vector<T>>& L, vector<vector<T>>& D, vector<vector<T>>& U, int n);
 
