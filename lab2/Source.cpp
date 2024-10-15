@@ -51,28 +51,6 @@ void printMatrix(const vector<vector<T>>& A, int n) // вывод матрицы
     }
 }
 
-vector<T> GenDiagVec(vector<T>& a, int num)
-{
-    int n = a.size();
-    vector<T> a1(n);
-    for (int i = 0; i < n; i++) {
-        a1[i] = num;
-    }
-    return a1;
-}
-
-vector<T> GenResultVec(vector<T>& d, int num)
-{
-    int n = d.size();
-    vector<T> d1(n);
-    d1[0] = 6;
-    for (int i = 1; i < n - 1; i++) {
-        d[i] = 10 - 2 * (i % 2);
-    }
-    d[n - 1] = 9 - 3 * (n % 2);
-    return d1;
-}
-
 vector<vector<T>> MatrixMult(const vector<vector<T>>& A, const vector<vector<T>>& B, int n)
 {
     vector<vector<T>> C(n, vector<T>(n));
@@ -98,8 +76,6 @@ vector<vector<T>> Transpose(const vector<vector<T>>& A, int n)
     }
     return A1;
 }
-
-
 
 T vectorNorm1(const vector<T>& b, int n)
 {
@@ -150,6 +126,34 @@ T ResidualVectorNorm(const vector<vector<T>>& A, const vector<T>& b, const vecto
     else
         return 0;
 }
+
+/*
+vector<T> GenDiagVec(vector<T>& a, int num, int ind)
+{
+    int n = a.size();
+    for (int i = 0; i < n; i++) {
+        a[i] = num;
+    }
+    if (ind == 0)
+        a[0] = 0;
+    if (ind == 1)
+        a[n] = 0;
+    return a;
+}*/
+
+/*
+vector<T> GenResultVec(vector<T>& d)
+{
+    int n = d.size();
+    vector<T> d(n);
+    d[0] = 6;
+    for (int i = 1; i < n; i++) {
+        d[i] = 10 - 2 * (i % 2);
+    }
+    d[n] = 9 - 3 * (n % 2);
+    return d;
+}*/
+
 
 T ResidualVectorNormTriDiagonal(vector<T> a, vector<T> b, vector<T> c, vector<T> d, const vector<T>& x, int n, int norm)
 {
@@ -358,7 +362,7 @@ Params SimpleIterationMethod(vector<vector<T>>& A, vector<T> b, vector<T> x0, co
 {
     Params params;
     vector<T> y(n), xk(n), xnext(n);
-    int maxIter = 1000;
+    int maxIter = 180;
     xk = x0; // x0 - начальное приближение, xk - на k-м шаге итерации
     xnext = xk; // k+1 итерация
     for (int i = 0; i < n; i++)
@@ -379,6 +383,12 @@ Params SimpleIterationMethod(vector<vector<T>>& A, vector<T> b, vector<T> x0, co
         xnext = C * xk + y;
 
         // Критерии останова итерационного процесса
+        // (ResidualVectorNorm(A, b, xnext, n, norm) < eps || vectorNorm1(xnext - xk, n) < eps
+        // || vectorNorm1(xnext - xk, n) <= (1 - matrixNorm1(C, n)) / matrixNorm1(C, n) * eps
+        // ResidualVectorNorm(A, b, xnext, n, norm) < eps || vectorNormInf(xnext - xk, n) < eps
+        // || vectorNormInf(xnext - xk, n) <= (1 - matrixNormInf(C, n)) / matrixNormInf(C, n) * eps
+        
+        
         if (norm == 1)
         {
             if (ResidualVectorNorm(A, b, xnext, n, norm) < eps || vectorNorm1(xnext - xk, n) < eps
@@ -392,8 +402,7 @@ Params SimpleIterationMethod(vector<vector<T>>& A, vector<T> b, vector<T> x0, co
 
         if (norm == 0)
         {
-            if (ResidualVectorNorm(A, b, xnext, n, norm) < eps || vectorNormInf(xnext - xk, n) < eps
-                || vectorNormInf(xnext - xk, n) <= (1 - matrixNormInf(C, n)) / matrixNormInf(C, n) * eps)
+            if (vectorNormInf(xnext - xk, n) <= (1 - matrixNormInf(C, n)) / matrixNormInf(C, n) * eps)
             {
                 params.x = xnext;
                 params.iterCount = iter + 1;
@@ -450,7 +459,7 @@ Params JacobiMethod(vector<vector<T>>& A, vector<T> b, vector<T> x0, const T& ep
     vector<T> y(n), xk(n), xnext(n);
     xk = x0;
     xnext = xk;
-    int maxIter = 100;
+    int maxIter = 98;
     vector<vector<T>> C(n, vector<T>(n));
     for (int i = 0; i < n; i++)
     {
@@ -469,8 +478,19 @@ Params JacobiMethod(vector<vector<T>>& A, vector<T> b, vector<T> x0, const T& ep
 
     for (int iter = 0; iter < maxIter; iter++)
     {
-        xnext = C * xk + y;
+        for (int i = 0; i < n; i++)
+        {
+            xnext[i] = b[i];
+            for (int j = 0; j < n; j++)
+            {
+                if (i != j)
+                    xnext[i] -= A[i][j] * xk[j];
+            }
+            xnext[i] /= A[i][i];
+        }
+        // xnext = C * xk + y;
 
+        
         if (norm == 1)
         {
             if (ResidualVectorNorm(A, b, xnext, n, norm) < eps || vectorNorm1(xnext - xk, n) < eps
@@ -484,8 +504,7 @@ Params JacobiMethod(vector<vector<T>>& A, vector<T> b, vector<T> x0, const T& ep
 
         if (norm == 0)
         {
-            if (ResidualVectorNorm(A, b, xnext, n, norm) < eps || vectorNormInf(xnext - xk, n) < eps
-                || vectorNormInf(xnext - xk, n) <= (1 - matrixNormInf(C, n)) / matrixNormInf(C, n) * eps)
+            if (vectorNormInf(xnext - xk, n) <= (1 - matrixNormInf(C, n)) / matrixNormInf(C, n) * eps)
             {
                 params.x = xnext;
                 params.iterCount = iter + 1;
@@ -510,7 +529,7 @@ Params SeidelMethod(vector<vector<T>>& A, vector<T> b, vector<T> x0, const T& ep
 Params RelaxationMethod(vector<vector<T>>& A, vector<T> b, vector<T> x0, const T& omega, const T& eps, int n, int norm)
 {
     Params params;
-    int maxIter = 100;
+    int maxIter = 88;
     vector<T> y(n), xk(n);
     xk = x0;
     vector<vector<T>> L(n, vector<T>(n)), D(n, vector<T>(n)), U(n, vector<T>(n));
@@ -545,6 +564,7 @@ Params RelaxationMethod(vector<vector<T>>& A, vector<T> b, vector<T> x0, const T
 
             xnext[i] = (1 - omega) * xk[i] + omega * (b[i] - sum1 - sum2) / A[i][i];
         }
+        
         if (norm == 1)
         {
             if (ResidualVectorNorm(A, b, xnext, n, norm) < eps || vectorNorm1(xnext - xk, n) < eps
@@ -558,8 +578,7 @@ Params RelaxationMethod(vector<vector<T>>& A, vector<T> b, vector<T> x0, const T
 
         if (norm == 0)
         {
-            if (ResidualVectorNorm(A, b, xnext, n, norm) < eps || vectorNormInf(xnext - xk, n) < eps
-                || vectorNormInf(xnext - xk, n) <= (1 - matrixNormInf(C, n)) / matrixNormInf(C, n) * eps)
+            if (vectorNormInf(xnext - xk, n) <= (1 - matrixNormInf(C, n)) / matrixNormInf(C, n) * eps)
             {
                 params.x = xnext;
                 params.iterCount = iter + 1;
@@ -582,7 +601,7 @@ Params SeidelMethodTriDiagonal(vector<T> a, vector<T> b, vector<T> c, vector<T> 
 Params RelaxationMethodTriDiagonal(vector<T> a, vector<T> b, vector<T> c, vector<T> d, vector<T> x0, const T& omega, const T& eps, int n, int norm)
 {
     Params params;
-    int maxIter = 100;
+    int maxIter = 1e9;
     vector<T> y(n), xk(n);
     xk = x0;
     vector<T> invb(n);
@@ -600,7 +619,7 @@ Params RelaxationMethodTriDiagonal(vector<T> a, vector<T> b, vector<T> c, vector
             sum1 += c[i] * xnext[i];
             sum2 += a[i] * xk[i];
             xnext[i] = (1 - omega) * xk[i] + omega * (b[i] - sum1 - sum2) / b[i];
-            difference = max(xnext[i], abs(xk[i]-xnext[i]));
+            difference = max(xnext[i], abs(xk[i] - xnext[i]));
         }
         xk = xnext;
         if (difference < eps) {
@@ -608,7 +627,7 @@ Params RelaxationMethodTriDiagonal(vector<T> a, vector<T> b, vector<T> c, vector
             params.iterCount = iter + 1;
             return params;
         }
-        
+
     }
 
     params.iterCount = maxIter;
