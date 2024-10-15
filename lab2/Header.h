@@ -16,10 +16,14 @@ void readSLAE(const string& file, vector<vector<T>>& A, vector<T>& b); // чте
 void printSLAE(const vector<vector<T>>& A, const vector<T>& b, int n); // вывод СЛАУ на экран
 void printMatrix(const vector<vector<T>>& A, int n); // вывод матрицы на экран
 
+vector<T> GenDiagVec(vector<T>& a, int num); // генерация диагональных векторов
+vector<T> GenResultVec(vector<T>& d, int num); // генерация диагональных векторов
+
 vector<vector<T>> MatrixMult(const vector<vector<T>>& A, const vector<vector<T>>& B, int n); // умножение матриц
 vector<vector<T>> Transpose(const vector<vector<T>>& A, int n); // транспонирование
 
 T ResidualVectorNorm(const vector<vector<T>>& A, const vector<T>& b, const vector<T>& x, int n, int norm); // норма вектора невязки
+T ResidualVectorNormTriDiagonal(vector<T> a, vector<T> b, vector<T> c, vector<T> d, const vector<T>& x, int n, int norm); // норма вектора невязки для тридиагональной матрицы
 
 vector<vector<T>> InvLU(const vector<vector<T>>& A, int n); // нахождение обратной матрицы с помощью LU-разложения
 
@@ -56,3 +60,7 @@ Params JacobiMethod(vector<vector<T>>& A, vector<T> b, vector<T> x0, const T& ep
 Params SeidelMethod(vector<vector<T>>& A, vector<T> b, vector<T> x0, const T& eps, int n, int norm);
 
 Params RelaxationMethod(vector<vector<T>>& A, vector<T> b, vector<T> x0, const T& omega, const T& eps, int n, int norm);
+
+Params SeidelMethodTriDiagonal(vector<T> a, vector<T> b, vector<T> c, vector<T> d, vector<T> x0, const T& eps, int n, int norm);
+
+Params RelaxationMethodTriDiagonal(vector<T> a, vector<T> b, vector<T> c, vector<T> d, vector<T> x0, const T& omega, const T& eps, int n, int norm);
