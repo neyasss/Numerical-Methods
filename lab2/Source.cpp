@@ -51,6 +51,28 @@ void printMatrix(const vector<vector<T>>& A, int n) // вывод матрицы
     }
 }
 
+vector<T> GenDiagVec(vector<T>& a, int num)
+{
+    int n = a.size();
+    vector<T> a1(n);
+    for (int i = 0; i < n; i++) {
+        a1[i] = num;
+    }
+    return a1;
+}
+
+vector<T> GenResultVec(vector<T>& d, int num)
+{
+    int n = d.size();
+    vector<T> d1(n);
+    d1[0] = 6;
+    for (int i = 1; i < n - 1; i++) {
+        d[i] = 10 - 2 * (i % 2);
+    }
+    d[n - 1] = 9 - 3 * (n % 2);
+    return d1;
+}
+
 vector<vector<T>> MatrixMult(const vector<vector<T>>& A, const vector<vector<T>>& B, int n)
 {
     vector<vector<T>> C(n, vector<T>(n));
@@ -76,6 +98,8 @@ vector<vector<T>> Transpose(const vector<vector<T>>& A, int n)
     }
     return A1;
 }
+
+
 
 T vectorNorm1(const vector<T>& b, int n)
 {
@@ -113,6 +137,26 @@ T ResidualVectorNorm(const vector<vector<T>>& A, const vector<T>& b, const vecto
         }
     }
 
+    if (norm == 1)
+    {
+        T norm1 = vectorNorm1(residualVec, n);
+        return norm1;
+    }
+    if (norm == 0)
+    {
+        T normInf = vectorNormInf(residualVec, n);
+        return normInf;
+    }
+    else
+        return 0;
+}
+
+T ResidualVectorNormTriDiagonal(vector<T> a, vector<T> b, vector<T> c, vector<T> d, const vector<T>& x, int n, int norm)
+{
+    vector<T> residualVec(n);
+    for (int i = 0; i < n; ++i) {
+        residualVec[i] = d[i] - (a[i - 1] * x[i - 1] + b[i] * x[i] + c[i] * x[i + 1]);
+    }
     if (norm == 1)
     {
         T norm1 = vectorNorm1(residualVec, n);
@@ -525,6 +569,48 @@ Params RelaxationMethod(vector<vector<T>>& A, vector<T> b, vector<T> x0, const T
         xk = xnext;
     }
     params.x = xk;
+    params.iterCount = maxIter;
+    return params;
+}
+
+Params SeidelMethodTriDiagonal(vector<T> a, vector<T> b, vector<T> c, vector<T> d, vector<T> x0, const T& eps, int n, int norm)
+{
+    Params params = RelaxationMethodTriDiagonal(a, b, c, d, x0, 1, eps, n, norm); // частный случай метода релаксации (omega = 1)
+    return params;
+}
+
+Params RelaxationMethodTriDiagonal(vector<T> a, vector<T> b, vector<T> c, vector<T> d, vector<T> x0, const T& omega, const T& eps, int n, int norm)
+{
+    Params params;
+    int maxIter = 100;
+    vector<T> y(n), xk(n);
+    xk = x0;
+    vector<T> invb(n);
+    T difference = 0;
+    for (int i = 0; i < n; i++)
+        invb[i] = 1 / b[i];
+
+    for (int iter = 0; iter < maxIter; iter++)
+    {
+
+        vector<T> xnext(n);
+        for (int i = 0; i < n; i++)
+        {
+            T sum1 = 0, sum2 = 0;
+            sum1 += c[i] * xnext[i];
+            sum2 += a[i] * xk[i];
+            xnext[i] = (1 - omega) * xk[i] + omega * (b[i] - sum1 - sum2) / b[i];
+            difference = max(xnext[i], abs(xk[i]-xnext[i]));
+        }
+        xk = xnext;
+        if (difference < eps) {
+            params.x = xnext;
+            params.iterCount = iter + 1;
+            return params;
+        }
+        
+    }
+
     params.iterCount = maxIter;
     return params;
 }
