@@ -130,8 +130,12 @@ T ResidualVectorNorm(const vector<vector<T>>& A, const vector<T>& b, const vecto
 T ResidualVectorNormTriDiagonal(vector<T> a, vector<T> b, vector<T> c, vector<T> d, const vector<T>& x, int n, int norm)
 {
     vector<T> residualVec(n);
-    for (int i = 0; i < n; ++i) {
-        residualVec[i] = d[i] - (a[i - 1] * x[i - 1] + b[i] * x[i] + c[i] * x[i + 1]);
+    for (int i = 0; i < n; ++i)
+    {
+        residualVec[i] = d[i];
+        if (i > 0) residualVec[i] -= a[i - 1] * x[i - 1];
+        residualVec[i] -= b[i] * x[i];
+        if (i < n - 1) residualVec[i] -= c[i] * x[i + 1];
     }
     if (norm == 1)
     {
