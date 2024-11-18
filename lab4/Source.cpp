@@ -5,7 +5,7 @@
 #include "Header.h"
 using namespace std;
 
-// Тестовые функции
+// РўРµСЃС‚РѕРІС‹Рµ С„СѓРЅРєС†РёРё
 double f1(const double x)
 {
 	return x * x;
@@ -50,7 +50,7 @@ double f8(const double x)
 	return R1 + R2 + 0.5;
 }
 
-// Сетки
+// РЎРµС‚РєРё
 vector<double> uniformGrid(const double& A, const double& B, int n)
 {
 	vector<double> grid(n);
@@ -76,7 +76,7 @@ vector<double> uniformGrid2(const double& A, const double& B, double q, int n)
 	return grid;
 }
 
-// Полином Лагранжа
+// РџРѕР»РёРЅРѕРј Р›Р°РіСЂР°РЅР¶Р°
 double polynomLagrange(const vector<double>& x, const vector<double>& y, int n, double X)
 {
 	double Ln = 0;
@@ -93,7 +93,7 @@ double polynomLagrange(const vector<double>& x, const vector<double>& y, int n, 
 	return Ln;
 }
 
-// Коэффициенты кубического сплайна (с использованием метода прогонки и формул из методички)
+// РљРѕСЌС„С„РёС†РёРµРЅС‚С‹ РєСѓР±РёС‡РµСЃРєРѕРіРѕ СЃРїР»Р°Р№РЅР° (СЃ РёСЃРїРѕР»СЊР·РѕРІР°РЅРёРµРј РјРµС‚РѕРґР° РїСЂРѕРіРѕРЅРєРё Рё С„РѕСЂРјСѓР» РёР· РјРµС‚РѕРґРёС‡РєРё)
 void cubicSplineCoeff(const vector<double>& x, const vector<double>& y, vector<double>& a, vector<double>& b,
 	vector<double>& c, vector<double>& d, int n)
 {
@@ -130,7 +130,7 @@ void cubicSplineCoeff(const vector<double>& x, const vector<double>& y, vector<d
 	}
 }
 
-// Кубический сплайн
+// РљСѓР±РёС‡РµСЃРєРёР№ СЃРїР»Р°Р№РЅ
 double cubicSpline(const vector<double>& x, const vector<double>& y, int n, double X)
 {
 	vector<double> a(n), b(n), c(n), d(n);
