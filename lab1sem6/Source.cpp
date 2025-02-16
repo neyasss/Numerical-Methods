@@ -275,7 +275,7 @@ void AdamsBashforth(vector<double>(*test)(const double& t, const vector<double>&
 {
 	ofstream result("Adams.txt");
 
-	// похож на предиктор-корректор, но не понимаю прикола
+	// РїРѕС…РѕР¶ РЅР° РїСЂРµРґРёРєС‚РѕСЂ-РєРѕСЂСЂРµРєС‚РѕСЂ, РЅРѕ РЅРµ РїРѕРЅРёРјР°СЋ РїСЂРёРєРѕР»Р°
 }
 
 
