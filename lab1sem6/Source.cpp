@@ -111,9 +111,9 @@ vector<double> NewtonMethod1(vector<double>(*test)(const double&, const vector<d
 	u_new = u_old;
 
 	auto eq = [u_old, h, t, test](const vector<double>& u_new)
-	{
-		return u_new - u_old - h * test(t + h, u_new);
-	};
+		{
+			return u_new - u_old - h * test(t + h, u_new);
+		};
 
 	int iter = 0;
 
@@ -167,9 +167,9 @@ vector<double> NewtonMethod2(vector<double>(*test)(const double&, const vector<d
 	u_new = u_old;
 
 	auto eq = [u_old, h, t, test](const vector<double>& u_new)
-	{
-		return u_new - u_old - (h / 2) * (test(t + h, u_new) + test(t, u_old));
-	};
+		{
+			return u_new - u_old - (h / 2) * (test(t + h, u_new) + test(t, u_old));
+		};
 
 	int iter = 0;
 
@@ -274,8 +274,50 @@ void RungeKutta4(vector<double>(*test)(const double& t, const vector<double>&), 
 void AdamsBashforth(vector<double>(*test)(const double& t, const vector<double>&), const vector<double> u0, double h, double t0, double tn)
 {
 	ofstream result("Adams.txt");
+	int RANG = u0.size();
+	int n = (tn - t0) / h;
 
-	// похож на предиктор-корректор, но не понимаю прикола
+	vector<double> y_next = u0, y_prev = u0, prediction(u0.size()), correction(u0.size());
+	vector<vector<double>> ode(4, vector<double>(u0.size()));
+	vector<double> k1(u0.size()), k2(u0.size()), k3(u0.size()), k4(u0.size()), K(u0.size());
+
+	for (int i = 0; i < 4; i++) {
+
+		ode[i] = test(t0 + i * h, y_prev);
+
+		k1 = test(t0 + i * h, y_prev);
+		k2 = test(t0 + i * h + h / 2, y_prev + h / 2 * k1);
+		k3 = test(t0 + i * h + h / 2, y_prev + h / 2 * k2);
+		k4 = test(t0 + i * h + h, y_prev + h * k3);
+;
+		K = 1. / 6 * (k1 + 2 * k2 + 2 * k3 + k4);
+
+		y_prev = y_next;
+		y_next = y_prev + h * K;
+
+		result << t0 + i * h << " ";
+		for (int j = 0; j < u0.size(); j++)
+			result << y_next[j] << " ";
+		result << endl;
+	}
+
+	y_prev = y_next;
+
+	for (int i = 3; i < n; i++) {
+
+		y_next = y_prev + (h / 24.) * (55. * ode[3] + 59. * ode[2] + 37. * ode[1] - 9. * ode[0]);
+		result << i * h << " ";
+		for (int elem = 0; elem < u0.size(); elem++) {
+			result << y_next[elem] << " ";
+		}
+		result << endl;
+		for (int j = 0; j < ode.size(); j++)
+		{
+			ode[(ode.size() + j - 1) % ode.size()] = ode[j];
+		}
+		ode[3] = test(t0 + (i + 1) * h, y_next);
+	}
+	result.close();
 }
 
 
