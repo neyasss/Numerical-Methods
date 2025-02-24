@@ -134,7 +134,7 @@ vector<double> NewtonMethod1(vector<double>(*test)(const double&, const vector<d
 		u_old = u_new;
 		u_new = u_new - eq(u_new) / grad;
 
-	} while (iter < 100 && sqrt((u_new - u_old)[0] + (u_new - u_old)[1]) < eps);
+	} while (iter < 100 && sqrt((u_new - u_old)[0] * (u_new - u_old)[0] + (u_new - u_old)[1] * (u_new - u_old)[1]) > eps);
 	return u_new;
 }
 
@@ -190,7 +190,7 @@ vector<double> NewtonMethod2(vector<double>(*test)(const double&, const vector<d
 		u_old = u_new;
 		u_new = u_new - eq(u_new) / grad;
 
-	} while (iter < 100 && sqrt((u_new - u_old)[0] + (u_new - u_old)[1]) < eps);
+	} while (iter < 100 && sqrt((u_new - u_old)[0] + (u_new - u_old)[1]) > eps);
 	return u_new;
 }
 
@@ -352,10 +352,10 @@ void PredictorCorrector(vector<double>(*test)(const double& t, const vector<doub
 	for (int i = 4; i <= n; i++)
 	{
 		prediction = y_prev + (h / 24) * (55 * ode[3] - 59 * ode[2] + 37 * ode[1] - 9 * ode[0]);
-		correction = y_prev + (h / 24) * (9 * test(t0 + (i + 1) * h, prediction) + 19 * ode[3] - 5 * ode[2] + ode[1]);
+		correction = (h / 24) * (9 * test(t0 + (i + 1) * h, prediction) + 19 * ode[3] - 5 * ode[2] + ode[1]);
 
 		y_prev = y_next;
-		y_next = correction;
+		y_next = y_prev + correction;
 
 		result << t0 + i * h << " ";
 		for (int j = 0; j < u0.size(); j++)
