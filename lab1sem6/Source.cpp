@@ -5,6 +5,12 @@
 #include <vector>
 using namespace std;
 
+bool dynamicStep = false;
+const double memoryLimit = 0.5;
+
+const double minTol = 0.0001 * 30;
+const double maxTol = 0.001 * 30;
+
 vector<double> test1(const double& t, const vector<double>& u)
 {
 	int n = u.size();
@@ -82,6 +88,16 @@ vector<double> operator/(const vector<double>& vec1, const vector<double>& vec2)
 	for (int i = 0; i < vec1.size(); i++)
 		res[i] /= vec2[i];
 	return res;
+}
+
+double scmult(vector<double> v1, vector<double> v2)
+{
+	double result = 0;
+	for (auto v = v1.begin(), p = v2.begin(); v != v1.end() && p != v2.end(); v++, p++)
+	{
+		result += *v * *p;
+	}
+	return result;
 }
 
 void EulerExplicit(vector<double>(*test)(const double& t, const vector<double>&), const vector<double> u0, double h, double t0, double tn)
@@ -216,16 +232,19 @@ void SymmetricScheme(vector<double>(*test)(const double& t, const vector<double>
 	result.close();
 }
 
+
 void RungeKutta2(vector<double>(*test)(const double& t, const vector<double>&), const vector<double> u0, double h, double t0, double tn)
 {
 	ofstream result("RungeKutta2.txt");
-
 	int n = (tn - t0) / h;
 	vector<double> y_next = u0, y_prev = u0;
 	vector<double> k1(u0.size()), k2(u0.size());
-
+	size_t maxSize = (size_t)round(0.5 * 1'073'741'824. / ((32. + 8. * u0.size())));
+	
 	for (int i = 0; i <= n; i++)
 	{
+		
+
 		y_prev = y_next;
 
 		k1 = test(t0 + i * h, y_prev);
@@ -241,6 +260,85 @@ void RungeKutta2(vector<double>(*test)(const double& t, const vector<double>&), 
 	result.close();
 }
 
+double dif_eval2(vector<double>(*test)(const double& t, const vector<double>&), double& tau, double t_i, double t_edge, vector <double>& k1, vector<double>& k2, vector <double> y_i, vector<double>& y_ipp_1, vector <double> & y_ipp_2)
+{
+	// Вычисляем компоненты k при половинном шаге 
+	//первый половинный шаг
+	double tau_half = tau / 2;
+	double temp_t = t_i;
+	vector<double> y_ipp_1_0 = y_i;
+	while (t_edge - temp_t > 0)
+	{
+		temp_t += tau_half;
+		k1 = test(temp_t - tau_half, y_ipp_1_0);
+		k2 = test(temp_t + tau_half, y_ipp_1_0 + tau_half * k1);
+		y_ipp_1_0 = y_ipp_1_0 + (tau_half / 2) * (k1 + k2);
+	}
+	//cout << t_edge << "v/s" << temp_t << endl;
+	//cout << "----t_edge = " << temp_t;
+	y_ipp_1 = y_ipp_1_0;
+	// Вычисляем компоненты k при целом шаге
+	temp_t = t_i;
+	y_ipp_1_0 = y_i;
+	while (t_edge - temp_t > 0)
+	{
+		temp_t += tau;
+		k1 = test(temp_t - tau, y_ipp_1_0);
+		k2 = test(temp_t + tau, y_ipp_1_0 + tau * k1);
+		y_ipp_1_0 = y_ipp_1_0 + (tau / 2) * (k1 + k2);
+	}
+	y_ipp_2 = y_ipp_1_0;
+	//проверяем апостериорную погрешность
+	int p = 2;
+	double denom = pow(2, p) - 1;
+	double difference = sqrt(scmult(y_ipp_2 - y_ipp_1, y_ipp_2 - y_ipp_1)) / denom;
+	//cout << "counted diff" << endl;
+	return difference;
+}
+
+void AutoStep_RungeKutta2(vector<double>(*test)(const double& t, const vector<double>&), double t0, double T, double tau0, vector<double> u0, double eps = 1e-6) {
+	ofstream result("RungeKutta2Auto.txt");
+	if (result.is_open())
+	{
+		double t_i = t0;
+		vector<double> y_i = u0;
+		vector<double> y_ipp_1_0 = u0, y_ipp_1 = u0, y_ipp_2 = u0;
+		vector<double> k1 = u0, k2 = u0;
+
+		double tau = tau0;
+		result << t_i << " ";
+		for (int i = 0; i < y_i.size(); ++i)
+			result << y_i[i] << " ";
+		result << " " << endl;
+
+		while (T - t_i > 0) {
+
+			double edge = t_i + tau;
+			double difference = dif_eval2(*test, tau, t_i, edge, k1, k2, y_i, y_ipp_1, y_ipp_2);
+			while (difference >= eps)
+			{
+				tau /= 2;
+				difference = dif_eval2(*test, tau, t_i, edge, k1, k2, y_i, y_ipp_1, y_ipp_2);
+			}
+			if (difference < eps)
+			{
+				y_i = y_ipp_2;
+				t_i += tau;
+
+				for (int i = 0; i < y_i.size(); ++i)
+					result << y_i[i] << " ";
+				result << " " << endl;
+
+				if (difference <= eps * 1e-3)
+				{
+					tau *= 2;
+				}
+				continue;
+			}
+		}
+		result.close();
+	}
+}
 
 void RungeKutta4(vector<double>(*test)(const double& t, const vector<double>&), const vector<double> u0, double h, double t0, double tn)
 {
@@ -271,6 +369,91 @@ void RungeKutta4(vector<double>(*test)(const double& t, const vector<double>&), 
 }
 
 
+double dif_eval4(vector<double>(*test)(const double& t, const vector<double>&), double& tau, double t_i, double t_edge, vector<double>& k1, vector<double>& k2, vector<double>& k3, vector<double>& k4, vector<double> y_i, vector<double>& y_ipp_1, vector<double>& y_ipp_2)
+{
+	// Вычисляем компоненты k при половинном шаге 
+	//первый половинный шаг
+	double tau_half = tau / 2;
+	double temp_t = t_i;
+	vector<double> y_ipp_1_0 = y_i;
+	while (t_edge - temp_t > 0)
+	{
+		temp_t += tau_half;
+		k1 = test(temp_t - tau_half, y_ipp_1_0);
+		k2 = test(temp_t - tau_half / 2, y_ipp_1_0 + 0.5 * tau_half * k1);
+		k3 = test(temp_t - tau_half / 2, y_ipp_1_0 + 0.5 * tau_half * k2);
+		k4 = test(temp_t, y_ipp_1_0 + tau_half * k3);
+		y_ipp_1_0 = y_ipp_1_0 + (tau_half / 6) * (k1 + 2 * k2 + 2 * k3 + k4);
+
+	}
+	//cout << t_edge << "v/s" << temp_t << endl;
+	//cout << "----t_edge = " << temp_t;
+	y_ipp_1 = y_ipp_1_0;
+	// Вычисляем компоненты k при целом шаге
+	temp_t = t_i;
+	y_ipp_1_0 = y_i;
+	while (t_edge - temp_t > 0)
+	{
+		temp_t += tau;
+		k1 = test(temp_t - tau, y_ipp_1_0);
+		k2 = test(temp_t - tau / 2, y_ipp_1_0 + 0.5 * tau * k1);
+		k3 = test(temp_t - tau / 2, y_ipp_1_0 + 0.5 * tau * k2);
+		k4 = test(temp_t, y_ipp_1_0 + tau * k3);
+		y_ipp_1_0 = y_ipp_1_0 + (tau / 6) * (k1 + 2 * k2 + 2 * k3 + k4);
+	}
+	y_ipp_2 = y_ipp_1_0;
+	//проверяем апостериорную погрешность
+	int p = 4;
+	double denom = pow(2, p) - 1;
+	double difference = sqrt(scmult(y_ipp_2 - y_ipp_1, y_ipp_2 - y_ipp_1)) / denom;
+	//cout << "counted diff" << endl;
+	return difference;
+}
+
+void AutoStep_RungeKutta4(vector<double>(*test)(const double& t, const vector<double>&), double t0, double T, double tau0, vector<double> u0, double eps = 1e-6)
+{
+	ofstream result("RungeKutta4Auto.txt");
+	if (result.is_open())
+	{
+		double t_i = t0;
+		vector<double> y_i = u0;
+		int ind = 0;
+		vector<double> y_ipp_1 = u0, y_ipp_2 = u0;
+		vector<double> k1 = u0, k2 = u0, k3 = u0, k4 = u0, K = u0;
+		double tau = tau0;
+		result << t_i << " ";
+		for (int i = 0; i < y_i.size(); ++i)
+			result << y_i[i] << " ";
+		result << " " << endl;
+		while (T - t_i > 0) {
+
+			double edge = t_i + tau;
+			double difference = dif_eval4(*test, tau, t_i, edge, k1, k2, k3, k4, y_i, y_ipp_1, y_ipp_2);
+			while (difference >= eps)
+			{
+				tau /= 2;
+				difference = dif_eval4(*test, tau, t_i, edge, k1, k2, k3, k4, y_i, y_ipp_1, y_ipp_2);
+			}
+			if (difference < eps)
+			{
+				y_i = y_ipp_2;
+				t_i += tau;
+				result << t_i << " ";
+				for (int i = 0; i < y_i.size(); ++i)
+					result << y_i[i] << " ";
+				result << " " << endl;
+				if (difference <= eps * 1e-3)
+				{
+					tau *= 2;
+				}
+				continue;
+			}
+
+		}
+		result.close();
+	}
+}
+
 void AdamsBashforth(vector<double>(*test)(const double& t, const vector<double>&), const vector<double> u0, double h, double t0, double tn)
 {
 	ofstream result("Adams.txt");
@@ -289,7 +472,7 @@ void AdamsBashforth(vector<double>(*test)(const double& t, const vector<double>&
 		k2 = test(t0 + i * h + h / 2, y_prev + h / 2 * k1);
 		k3 = test(t0 + i * h + h / 2, y_prev + h / 2 * k2);
 		k4 = test(t0 + i * h + h, y_prev + h * k3);
-;
+		;
 		K = 1. / 6 * (k1 + 2 * k2 + 2 * k3 + k4);
 
 		y_prev = y_next;
