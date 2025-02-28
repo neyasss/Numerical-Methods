@@ -31,5 +31,3 @@ void AutoStep_RungeKutta4(vector<double>(*test)(const double& t, const vector<do
 void AdamsBashforth(vector<double>(*test)(const double& t, const vector<double>&), const vector<double> u0, double h, double t0, double tn);
 
 void PredictorCorrector(vector<double>(*test)(const double& t, const vector<double>&), const vector<double> u0, double h, double t0, double tn);
-
-bool PredictCorrect4Solve(F func, DT t_0, DT T, DT tau, vector<DT> u_0, string filename = "predict4-1");
