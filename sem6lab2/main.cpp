@@ -1,5 +1,3 @@
-
-
 #include<fstream>
 #include<istream>
 #include<vector>
@@ -1945,37 +1943,52 @@ int main() {
 
 
 
-    /* Тест: Вариант 5 */
-    PDE_data test5;
-    test5.c = 2;
-    test5.rho = 0.25;
-    test5.L = 1;
-    test5.t0 = 0.5;
-    test5.T = 10;
-    test5.u0 = 0.2;
-    test5.set_K([](double x, double u) {
-        double x1 = 0.5, x2 = 2. / 3.;
-        double k1 = 2., k2 = 0.5;
-        double L = 1;
+    /* Тест: Вариант 2 */
+    PDE_data testv;
+    testv.c = 1;
+    testv.rho = 1;
+    testv.L = 1;
+    testv.t0 = 0.5;
+    testv.T = 10;
+    testv.u0 = 0.1;
+    testv.h = 0.1;
+    testv.tau = 0.01;
 
-        if (x <= x1) {
-            return k1;
-        }
-        else if (x < x2) {
-            return (k1 * ((x - x2) / (x1 - x2)) + k2 * ((x - x1) / (x2 - x1)));
-        }
-        else if (x <= L) {
-            return k2;
-        }
-        else {
-            return 0.;
-        }
+    testv.set_K([](double x, double u) {
+        double x1 = 1. / 3, x2 = 2. / 3.;
+    double k1 = 1., k2 = 0.1;
+    double L = 1;
+    double alpha = 2;
+    double beta = 0.5;
+    double gamma = 3;
+
+    // return alpha + beta * pow(u, gamma);
+    
+    if (x <= x1) {
+        return k1;
+    }
+    else if (x < x2) {
+        return (k1 * ((x - x2) / (x1 - x2)) + k2 * ((x - x1) / (x2 - x1)));
+    }
+    else if (x <= L) {
+        return k2;
+    }
+    else {
+        return 0.;
+    }
         });
-    test5.set_G_left([](double x) { return 0.2; });
-    test5.G_left_type = false;
-    test5.set_G_right([](double x) { return 10.; });
-    test5.G_right_type = false;
-    test5.set_init_func([](double x) { return 20.; });  // Начальная температура по всему стержню
+    testv.set_G_left([&](double t) { if (t < 0.5) return 20 * t; else return 0.; });
+    testv.G_left_type = false;
+    testv.set_G_right([](double x) { return 0.1; });
+    testv.G_right_type = true;
+    testv.set_init_func([](double x) { return 0.1; });  // Начальная температура по всему стержню
+    testv.K_type = false;
+    if (!testv.K_type) {
+        FiniteScheme(testv.tau, testv.h, 1., testv, "testv.txt");
+    }
+    else {
+        IterationScheme(testv.tau, testv.h, 0., testv, "testv_iterational.txt");
+    }
 
     /* Случай test 5. */
     //ExplicitScheme(0.01, 0.1, 1., test5);
