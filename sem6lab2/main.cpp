@@ -1399,12 +1399,19 @@ bool FiniteScheme(double tau, double h, double sigma, PDE_data test, std::string
     // Создание файла
     std::string path = filename;
     std::ofstream fpoints(path);
+    std::ofstream convergence("convergence.txt");
     std::cout << "log[INFO]: Starting ExplicitScheme" << std::endl;
     std::cout << "log[INFO]: Opening a file \"" << filename << "\" to write..." << std::endl;
     if (fpoints.is_open())
-    {
+    {   
+        
         double t_i = t_0;
         std::vector<double> state_i = state_0;
+        vector<double> errors;
+        vector<double> delta;
+        delta[0] = 0;
+        vector<double> logdelta;
+        logdelta[0] = 0;
         writeVectorToFile(fpoints, t_i, state_i);
         double x_i = x_0;
 
@@ -1467,7 +1474,14 @@ bool FiniteScheme(double tau, double h, double sigma, PDE_data test, std::string
                 Fs[i] = c * rho * h / tau * state_i[i] +
                     (1 - sigma) * (w(a_ip, state_i[i + 1], state_i[i], h) - w(a_i, state_i[i], state_i[i - 1], h));
             }
-
+            double absError = 0.;
+            for (size_t i = 1; i <= size(state_i); ++i) {
+                    double error = fabs(test.K_ptr(h * j, tau * i) - state_i[j]);
+                    if (error > absError)
+                        absError = error;
+                }
+            errors[j] = absError;
+            convergence <<"errors:" << absError << " ";
             // Получение нового состояния системы
             // A - C + B = - F (не домножаем векторы на -1, так как уже считали домноженные)
             state_i = TridiagonalMatrixAlgorithm(As, Cs, Bs, Fs);
@@ -1475,6 +1489,19 @@ bool FiniteScheme(double tau, double h, double sigma, PDE_data test, std::string
             // Запись в файл
             writeVectorToFile(fpoints, t_i, state_i);
         }
+        convergence << endl;
+     
+        for (int k = 1; k <= size(errors); k++) {
+
+            delta[k] = errors[k] - errors[k - 1];
+            convergence << "delta:" << delta[k] << " ";
+        }
+        convergence << endl;
+        for (int k = 1; k <= size(delta); k++) {
+            logdelta[k] = log(delta[k]) / log(0.5);
+            convergence << "logdelta:" << logdelta[k] << " ";
+        }
+        convergence.close();
         fpoints.close();
         return true;
 
@@ -1565,10 +1592,14 @@ bool IterationScheme(double tau, double h, double sigma, PDE_data test, std::str
     // Создание файла
     std::string path = filename;
     std::ofstream fpoints(path);
+    std::ofstream convergence("convergence.txt");
     std::cout << "log[INFO]: Starting ExplicitScheme" << std::endl;
     std::cout << "log[INFO]: Opening a file \"" << filename << "\" to write..." << std::endl;
     if (fpoints.is_open()) {
-
+        vector<double> errors;
+        vector<double> delta;
+        delta[0] = 0;
+        vector<double> logdelta;
         double t_i = t_0;
         std::vector<double> state_i = state_0;
         writeVectorToFile(fpoints, t_i, state_i);
@@ -1635,6 +1666,14 @@ bool IterationScheme(double tau, double h, double sigma, PDE_data test, std::str
                         (w(a_ip, state_i[i + 1], state_i[i], h) - w(a_i, state_i[i], state_i[i - 1], h)));
 
                 }
+                double absError = 0.;
+                for (size_t i = 1; i <= size(state_i); ++i) {
+                    double error = fabs(test.K_ptr(h * j, tau * i) - state_i[j]);
+                    if (error > absError)
+                        absError = error;
+                }
+                errors[j] = absError;
+                convergence << "errors:" << absError << " ";
                 // Получение нового состояния системы
                 //state_i = TripleBigRelaxSolve(As, Cs, Bs, Fs, state_i);
                 state_i = TridiagonalMatrixAlgorithm(As, Cs, Bs, Fs);
@@ -1643,6 +1682,19 @@ bool IterationScheme(double tau, double h, double sigma, PDE_data test, std::str
 
             writeVectorToFile(fpoints, t_i, state_i);
         }
+        convergence << endl;
+
+        for (int k = 1; k <= size(errors); k++) {
+
+            delta[k] = errors[k] - errors[k - 1];
+            convergence << "delta:" << delta[k] << " ";
+        }
+        convergence << endl;
+        for (int k = 1; k <= size(delta); k++) {
+            logdelta[k] = log(delta[k]) / log(0.5);
+            convergence << "logdelta:" << logdelta[k] << " ";
+        }
+        convergence.close();
         fpoints.close();
         return true;
     }
@@ -1650,6 +1702,7 @@ bool IterationScheme(double tau, double h, double sigma, PDE_data test, std::str
         std::cout << "log[ERROR]: Couldn't open or create a file" << std::endl;
         return false;
     }
+
 };
 
 
@@ -1881,6 +1934,8 @@ bool infoIterationScheme(double tau, double h, double sigma, PDE_data test, std:
 
 
 
+
+
 int main() {
 
     /* Тест 1: Алюминий, фиксированная температура на концах */
@@ -1951,38 +2006,38 @@ int main() {
     testv.t0 = 0.5;
     testv.T = 10;
     testv.u0 = 0.1;
-    testv.h = 0.1;
-    testv.tau = 0.01;
+    testv.h = 0.5;
+    testv.tau = 0.5;
 
     testv.set_K([](double x, double u) {
         double x1 = 1. / 3, x2 = 2. / 3.;
-    double k1 = 1., k2 = 0.1;
-    double L = 1;
-    double alpha = 2;
-    double beta = 0.5;
-    double gamma = 3;
+        double k1 = 1., k2 = 0.1;
+        double L = 1;
+        double alpha = 2;
+        double beta = 0.5;
+        double gamma = 3;
 
-    // return alpha + beta * pow(u, gamma);
-    
-    if (x <= x1) {
-        return k1;
-    }
-    else if (x < x2) {
-        return (k1 * ((x - x2) / (x1 - x2)) + k2 * ((x - x1) / (x2 - x1)));
-    }
-    else if (x <= L) {
-        return k2;
-    }
-    else {
-        return 0.;
-    }
+        // return alpha + beta * pow(u, gamma);
+
+        if (x <= x1) {
+            return k1;
+        }
+        else if (x < x2) {
+            return (k1 * ((x - x2) / (x1 - x2)) + k2 * ((x - x1) / (x2 - x1)));
+        }
+        else if (x <= L) {
+            return k2;
+        }
+        else {
+            return 0.;
+        }
         });
     testv.set_G_left([&](double t) { if (t < 0.5) return 20 * t; else return 0.; });
     testv.G_left_type = false;
     testv.set_G_right([](double x) { return 0.1; });
     testv.G_right_type = true;
     testv.set_init_func([](double x) { return 0.1; });  // Начальная температура по всему стержню
-    testv.K_type = false;
+    testv.K_type = true;
     if (!testv.K_type) {
         FiniteScheme(testv.tau, testv.h, 1., testv, "testv.txt");
     }
