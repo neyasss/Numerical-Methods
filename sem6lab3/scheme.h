@@ -47,7 +47,7 @@ void Scheme(WaveData& data, const WaveConditions& wc, size_t steps)
 {
     std::vector<double> fxx(data.N);
 
-    // Вычисление второй производной
+    // Р’С‹С‡РёСЃР»РµРЅРёРµ РІС‚РѕСЂРѕР№ РїСЂРѕРёР·РІРѕРґРЅРѕР№
     if (wc.isFxxSet())
     {
         for (size_t i = 1; i < data.N; ++i)
@@ -68,7 +68,7 @@ void Scheme(WaveData& data, const WaveConditions& wc, size_t steps)
         data.y[1][i] += data.a2 * data.tau * data.tau * 0.5 * fxx[i];
     }
 
-    // Основной цикл процесса
+    // РћСЃРЅРѕРІРЅРѕР№ С†РёРєР» РїСЂРѕС†РµСЃСЃР°
     for (size_t j = 1; j < steps; ++j)
     {
         data.y[j][0] = wc.leftU(data.tau * j);
